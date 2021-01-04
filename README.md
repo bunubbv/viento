@@ -7,12 +7,12 @@ VientoEngine은 Python 기반의 오픈나무와 호환되는 '빠르고, 비동
 Sanic과 aiosqlite를 사용하며, 오픈나무 3.2.0 버전과 호환됩니다.
 
 ### TOC
- * <a href="#시작">시작</a>
- * <a href="#기여">기여</a>
- * <a href="#지원">지원</a>
- * <a href="#라이선스">라이선스</a>
- * <a href="#오픈나무">오픈나무</a>
- * <a href="#기타">기타</a>
+ * [시작](#시작)
+ * [기여](#기여)
+ * [지원](#지원)
+ * [라이선스](#라이선스)
+ * [오픈나무](#오픈나무)
+ * [기타](#기타)
 
 ## 시작
 VientoEngine은 Python 3 기반 애플리케이션이며, Python 3.6 이상 버전이 동작하는 환경이 필요합니다.
@@ -20,7 +20,7 @@ VientoEngine은 Python 3 기반 애플리케이션이며, Python 3.6 이상 버�
 자세한 내용은 설치 가이드를 참조하세요.
 
 ## 기여
-VientoEngine에는 버그나 여러 문제점이 존재할 수 있습니다. <a href="https://github.com/BadaWikiDev/VientoEngine/issues">이슈 트래커</a>에 보고하셔서 VientoEngine의 완성도를 높이는 데 도움을 줄 수 있습니다. 또한 직접 새로운 기능을 추가하거나, 버그를 고치는 등의 코드 수정도 <a href="https://github.com/BadaWikiDev/VientoEngine/pulls">Pull requests</a>에서 가능합니다.
+VientoEngine에는 버그나 여러 문제점이 존재할 수 있습니다. [이슈 트래커](https://github.com/BadaWikiDev/VientoEngine/issues)에 보고하셔서 VientoEngine의 완성도를 높이는 데 도움을 줄 수 있습니다. 또한 직접 새로운 기능을 추가하거나, 버그를 고치는 등의 코드 수정도 [Pull requests](https://github.com/BadaWikiDev/VientoEngine/pulls)에서 가능합니다.
 
 VientoEngine에는 확장 기능이 존재합니다. 확장 기능 스토어에서 직접 제작한 확장 기능을 업로드하여 공유할 수도 있습니다.
 
@@ -38,6 +38,12 @@ VientoEngine에는 확장 기능이 존재합니다. 확장 기능 스토어에�
 ## 라이선스
 VientoEngine은 BSD 3-Clause License 라이선스로 보호받고 있습니다. VientoEngine을 사용할 때는 반드시 라이선스를 준수해야 하며, 라이선스를 위반할 시 법적 조치가 따를 수 있습니다. 포함된 프로젝트는 아래 목록을 참조하시기 바랍니다.
 
+다음과 같은 프로젝트, 코드를 사용했습니다.
+ * [openNAMU](https://github.com/2du/openNAMU) - namumark.py
+ * [highlightjs](https://highlightjs.org/) -Syntax highlighting
+ * [MathJax](https://www.mathjax.org/) - Numerical expression
+ * [shortcut.js](http://www.openjs.com/scripts/events/keyboard_shortcuts/) - Keyboard Shortcuts
+
 ## 오픈나무
 VientoEngine은 오픈나무와 호환됩니다. 하지만 아직 완벽하게 호환되지는 않으며, 일부 수정이 필요합니다.
 
@@ -45,4 +51,4 @@ VientoEngine은 오픈나무와 호환됩니다. 하지만 아직 완벽하게 �
 
 ## 기타
  * 공식 사이트
- * <a href="https://github.com/BadaWikiDev/VientoEngine/graphs/contributors">기여자 목록</a>
+ * [기여자 목록](https://github.com/BadaWikiDev/VientoEngine/graphs/contributors)
