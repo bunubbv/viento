@@ -20,7 +20,7 @@ VientoEngine은 Python 3 기반 애플리케이션이며, Python 3.6 이상 버�
 자세한 내용은 설치 가이드를 참조하세요.
 
 ## 기여
-VientoEngine에는 버그나 여러 문제점이 존재할 수 있습니다. [이슈 트래커](https://github.com/BadaWikiDev/VientoEngine/issues)에 보고하셔서 VientoEngine의 완성도를 높이는 데 도움을 줄 수 있습니다. 직접 새로운 기능을 추가하거나, 버그를 고치는 등의 코드 수정도 [Pull requests](https://github.com/BadaWikiDev/VientoEngine/pulls)로 가능합니다.
+VientoEngine에는 버그나 여러 문제점이 존재할 수 있습니다. [이슈 트래커](https://github.com/BadaWikiDev/VientoEngine/issues)에 보고하여 완성도를 높이는 데 도움을 줄 수 있습니다. 직접 새로운 기능을 추가하거나, 버그를 고치는 등의 코드 수정도 [Pull requests](https://github.com/BadaWikiDev/VientoEngine/pulls)로 가능합니다.
 
 VientoEngine에는 확장 기능이 존재합니다. 확장 기능 스토어에서 직접 제작한 확장 기능을 업로드하여 공유할 수도 있습니다.
 
