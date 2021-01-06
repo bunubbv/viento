@@ -8,13 +8,6 @@ import json
 import os
 import re
 
-for route_file in os.listdir("route"):
-    py_file = re.search("(.+)\.py$", route_file)
-    if py_file:
-        py_file = py_file.groups()[0]
-
-        exec("from route." + py_file + " import *")
-        
 version_load = json.loads(open('data/version.json', encoding='utf-8').read())
 version = version_load["main"]["version"]
 release = version_load["main"]["release"]
@@ -26,6 +19,13 @@ print('version : ' + version)
 print('release : ' + release)
 print('db_count : ' + db_count)
 print('')
+
+for route_file in os.listdir("route"):
+    py_file = re.search("(.+)\.py$", route_file)
+    if py_file:
+        py_file = py_file.groups()[0]
+
+        exec("from route." + py_file + " import *")
 
 ## 위키 설정
 
@@ -59,9 +59,9 @@ async def run():
 
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
     db_create = {}
-    db_create['all_data'] = ['doc', 'doc_cac', 'doc_his', 'rec_dis', 'rec_ban', 'rec_log', 'mbr', 'mbr_set', 'mbr_log', 'ban', 'dis', 'acl', 'backlink', 'wiki_set', 'list_per', 'list_fil', 'html_fil', 'list_alarm', 'list_watch', 'list_inter']
+    db_create['table'] = ['doc', 'doc_cac', 'doc_his', 'rec_dis', 'rec_ban', 'rec_log', 'mbr', 'mbr_set', 'mbr_log', 'ban', 'dis', 'acl', 'backlink', 'wiki_set', 'list_per', 'list_fil', 'html_fil', 'list_alarm', 'list_watch', 'list_inter']
     
-    for i in db_create['all_data']:
+    for i in db_create['table']:
         try:
             await db.execute('select test from ' + i + ' limit 1')
         except:
@@ -78,7 +78,7 @@ async def run():
             db_setup = 1
         else:
             if int(version_load['main']['db_count']) > int(db_ver[0][0]):
-                setup_tool = 1
+                db_setup = 1
     except:
         db_setup = 1
 
@@ -104,7 +104,7 @@ async def run():
         db_create['list_watch'] = ['user', 'title']
         db_create['list_inter'] = ['title', 'link', 'icon']
 
-        for create_table in db_create['all_data']:
+        for create_table in db_create['table']:
             for create in db_create[create_table]:
                 try:
                     await db.execute('select ' + create + ' from ' + create_table + ' limit 1')
