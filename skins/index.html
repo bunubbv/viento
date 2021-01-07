@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>{{ title }} - wiki</title>
+		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/moonspam/NanumBarunGothic@latest/nanumbarungothicsubset.css">
+		<style>
+			html { height: 100%; }
+			body { font-family: NanumBarunGothic, sans-serif!important; font-size: 14.5px; padding: 0; margin: 0; height: 100%; }
+			.skin_container { margin-left: auto; margin-right: auto; padding: 18px; width: 900px; }
+			#skin_nav { background-color: white; display: flex; font-size: 16px; }
+			#skin_top { height: 40vh; background: linear-gradient(to right, #00afff, #008dcf); font-size: 48px; font-weight: 600; color: white; display: flex; }
+			.skin_nav_li { display: inline-block; padding-right: 20px; }
+			#skin_nav_search { display: inline; }
+			.skin_title { vertical-align: text-bottom; margin-top: 190px; margin-top: calc(40vh - 110px); }
+			.skin_date { font-size: 14.5px; font-weight: 500; }
+			a { background: linear-gradient(to right, #00afff, #008dcf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+			.skin_footer { text-align: center; margin-top: 20px; margin-bottom: 20px; }
+			#skin_toolbar { margin-bottom: 15px; font-size: 16px; background: linear-gradient(to right, #00afff, #008dcf); padding: 7px 12px; float: right; display: inline-block; }
+			.skin_toolbar_button { padding: 10px; color: white; -webkit-text-fill-color: unset; }
+			#skin_bottom { position: absolute; left: 0; bottom: 0; width: 100%; }
+			#skin_content { min-height: 100%; position: relative; }	
+			textarea { width: 100%; border: 1px solid #ccc; }
+			
+		</style>
+	</head>
+	<body>
+		<div id="skin_content">
+			<div id="skin_nav">
+				<div class="skin_container">
+					<li class="skin_nav_li">
+						<a href="/">logo</a>
+					</li>
+					<li class="skin_nav_li">
+						<a href="/recent/changes">최근 변경</a>
+					</li>
+					<li class="skin_nav_li">
+						<a href="/recent/discuss">최근 토론</a>
+					</li>
+					<div id="skin_nav_search">
+						<input id="skin_nav_search_box">
+					</div>
+				</div>
+			</div>
+			<div id="skin_top">
+				<div class="skin_container">
+					<div class="skin_title">{{ title }}</div>
+					<div class="skin_date"> date 에 마지막으로 편집되었습니다. </div>
+				</div>
+			</div>
+			<div id="skin_middle">
+				<div class="skin_container">
+					<span id="skin_toolbar">
+						{% if menu != 0 %}
+							{% for button in menu %}
+								<a href="/{{button[0]}}" class="skin_toolbar_button">{{button[1]}}</a>
+							{% endfor %}
+						{% endif %}
+					</span>
+					<div id="skin_data">
+						{{ data }}
+					</div>
+				</div>
+			</div>
+			<div id="skin_bottom">
+				<div class="skin_container">
+					<div class="skin_footer">footer</div>
+					<div class="skin_footer"><a href="https://github.com/BadaWikiDev/VientoEngine">VientoEngine</a> | (C) 2021. <a href="https://github.com/BadaWikiDev">BlueWhite</a></div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
