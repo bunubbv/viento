@@ -1,0 +1,6 @@
+sanic
+sanic_jinja2
+sanic_ipware
+aiosqlite
+aiohttp
+pysha3; python_version < "3.6"
