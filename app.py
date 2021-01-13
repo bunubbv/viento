@@ -162,6 +162,8 @@ async def wiki_edit(request, name):
 
     data_get = await db.execute("select data from doc where title = ? ", [name])
     data_get = await data_get.fetchall()
+    
+    data = ""
 
     if data_get:
         data = data_get[0][0]
