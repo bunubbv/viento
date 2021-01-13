@@ -1,12 +1,14 @@
 from sanic import Sanic, response, Blueprint
 from sanic_jinja2 import SanicJinja2
-from sanic_ipware import get_client_ip
 import aiosqlite
 import asyncio
 import aiohttp
 import json
+import html
 import os
 import re
+
+from route.tool.tool import *
 
 version_load = json.loads(open('data/version.json', encoding='utf-8').read())
 version = version_load["main"]["version"]
@@ -135,20 +137,21 @@ async def wiki_read(request, name):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
         
-    try:
-        data = await db.execute("select data from doc where title = ?", [name])
-        data = await data.fetchall()
-        
+    data = await db.execute("select data from doc where title = ?", [name])
+    data = await data.fetchall()
+
+    if data:    
         return jinja.render("index.html", request,
             data = data[0][0],
             title = name,
+            sub = 0,
             menu = [['edit/' + name, '편집'], ['discuss/' + name, '토론'], ['backlink/' + name, '역링크'], ['history/' + name, '역사'], ['acl/' + name, 'ACL']]
         )
-    
-    except:
+    else:
         return jinja.render("index.html", request, 
             data = "해당 문서를 찾을 수 없습니다.", 
             title = name,
+            sub = 0,
             menu = [['edit/' + name, '편집'], ['discuss/' + name, '토론'], ['backlink/' + name, '역링크'], ['history/' + name, '역사'], ['acl/' + name, 'ACL']]
         )
         
@@ -156,46 +159,108 @@ async def wiki_read(request, name):
 async def wiki_edit(request, name):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
-    
-    try:
-        data_get = await db.execute("select data from doc where title = ? ", [name])
-        data_get = await data_get.fetchall()
-        data_old = data_get[0][0]
+
+    data_get = await db.execute("select data from doc where title = ? ", [name])
+    data_get = await data_get.fetchall()
+
+    if data_get:
         data = data_get[0][0]
-    
-    except:
-        data_old = ''
-        data = ''
 
     if request.method == 'POST':
-        data = request.form.get('wiki_textarea_edit_2')
+        data = request.form.get('wiki_textarea_edit_1', '')
+        send = request.form.get('wiki_textbox_edit_1', '')
+        data = re.sub('\n', '<br>', data)
         
-        if data_old != '':
-            if data_old == data:
+        if data_get:
+            if data_get == data:
                 return response.redirect("/w/" + name)
             
             else:
-                data_update = await db.execute("update doc set data = ? where title = ?", [data, name])
+                await db.execute("update doc set data = ? where title = ?", [data, name])
                 await db.commit()
+                await history_add(name, data, await date_time(), '0', send, '0')
                 return response.redirect("/w/" + name)
                 
         else:
-            data_insert = await db.execute("insert into doc (title, data) values (?, ?)", [name, data])
+            await db.execute("insert into doc (title, data) values (?, ?)", [name, data])
             await db.commit()
+            await history_add(name, data, await date_time(), '0', send, '0')
             return response.redirect("/w/" + name)
             
-        
     return jinja.render("index.html", request,
             data = '''
                 <form method="post">
-                    <textarea class="wiki_textarea" name="wiki_textarea_edit_1" style="display: none;">''' + data_old + '''</textarea>
-                    <textarea class="wiki_textarea" name="wiki_textarea_edit_2">''' + data + '''</textarea>
+                    <textarea rows="25" class="wiki_textarea" name="wiki_textarea_edit_1">''' + html.escape(re.sub('<br>', '\n', data)) + '''</textarea>
                     <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_edit_1">
                     <button type="submit" class="wiki_button" name="wiki_button_edit_1">저장</button>
                 </form>
             ''',
             title = name,
-            menu = [['delete/' + name, '삭제'], ['move/' + name, '이동']]
+            sub = '편집',
+            menu = [['delete/' + name, '삭제'], ['move/' + name, '이동'], ['w/' + name, '문서']]
+        )
+        
+@app.route("/history/<name:string>")
+async def wiki_history(request, name):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    
+    data = ''
+    data_get = await db.execute("select id, title, date, ip, send, leng from doc_his where title = ? order by id + 0 desc limit 30", [name])
+    data_get = await data_get.fetchall()
+
+    #if request.method == 'POST': 비교 기능 등
+
+    for data_history in data_get:
+        if data_get:
+            data += '<li>' + data_history[2] + ' ' + data_history[3] + '</li>'
+
+    return jinja.render("index.html", request,
+            data = data,
+            title = name,
+            sub = '역사',
+            menu = [['w/' + name, '문서']]
+    )
+
+@app.route("/delete/<name:string>")
+async def wiki_delete(request, name):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    data_get = await db.execute("select data from doc where title = ? ", [name])
+    data_get = await data_get.fetchall()
+
+    if data_get:
+        data = data_get[0][0]
+
+    if request.method == 'POST':
+        data = request.form.get('wiki_textarea_edit_1', '')
+        send = request.form.get('wiki_textbox_edit_1', '')
+        data = re.sub('\n', '<br>', data)
+        
+        if data_get:
+                await db.execute("update doc set data = ? where title = ?", [data, name])
+                await db.commit()
+                await history_add(name, data, await date_time(), '0', send, '0')
+                return response.redirect("/w/" + name)
+                
+        else:
+            await db.execute("insert into doc (title, data) values (?, ?)", [name, data])
+            await db.commit()
+            await history_add(name, data, await date_time(), '0', send, '0')
+            return response.redirect("/w/" + name)
+            
+    return jinja.render("index.html", request,
+            data = '''
+                <form method="post">
+                    <textarea rows="25" class="wiki_textarea" name="wiki_textarea_edit_1">''' + html.escape(re.sub('<br>', '\n', data)) + '''</textarea>
+                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_edit_1">
+                    <button type="submit" class="wiki_button" name="wiki_button_edit_1">확인</button>
+                </form>
+            ''',
+            title = name,
+            sub = '삭제',
+            menu = [['w/' + name, '문서']]
         )
 
 if __name__ == "__main__":
