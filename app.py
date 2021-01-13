@@ -224,7 +224,7 @@ async def wiki_history(request, name):
             menu = [['w/' + name, '문서']]
     )
 
-@app.route("/delete/<name:string>")
+@app.route("/delete/<name:string>", methods=['POST', 'GET'])
 async def wiki_delete(request, name):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
