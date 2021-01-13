@@ -1,6 +1,6 @@
 ![VientoEngine](https://user-images.githubusercontent.com/65072459/103525598-cfb06d00-4ec2-11eb-9b06-192e05fb2096.png)
 
-<img src="https://img.shields.io/pypi/pyversions/Sanic"/> <img src="https://img.shields.io/badge/license-BSD%203--Clause-informational"/>
+<img src="https://img.shields.io/pypi/pyversions/Sanic"/> <img src="https://img.shields.io/badge/license-BSD%203--Clause-informational"/> <img src="https://img.shields.io/badge/Progress-5%25-informational"/>
 ## VientoEngine
 VientoEngine은 Python 기반의 [오픈나무](https://github.com/2du/openNAMU)와 호환되는 '빠르고, 비동기적인' 나무마크 지원 위키 엔진입니다.
 
