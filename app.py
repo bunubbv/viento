@@ -162,6 +162,8 @@ async def wiki_edit(request, name):
 
     data_get = await db.execute("select data from doc where title = ? ", [name])
     data_get = await data_get.fetchall()
+    
+    data = ""
 
     if data_get:
         data = data_get[0][0]
@@ -222,7 +224,7 @@ async def wiki_history(request, name):
             menu = [['w/' + name, '문서']]
     )
 
-@app.route("/delete/<name:string>")
+@app.route("/delete/<name:string>", methods=['POST', 'GET'])
 async def wiki_delete(request, name):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
