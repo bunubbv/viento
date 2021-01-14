@@ -1,7 +1,7 @@
 { 
 	"main": {
-		"version": "0.0.4 Alpha",
-		"release": "2021-01-13.001",
+		"version": "0.0.5 Alpha",
+		"release": "2021-01-14.001",
 		"db_count": "0"
 	}
 }

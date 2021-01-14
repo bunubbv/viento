@@ -32,9 +32,30 @@ for route_file in os.listdir("route"):
 ## 위키 설정
 
 async def run():
+    server_setting = { 
+        "host" : {
+            "setting": "host",
+            "default": "0.0.0.0"
+        },
+        "port" : {
+            "setting": "port",
+            "default": "3000"
+        },
+        "lang" : {
+            "setting": "lang",
+            "default": "ko-KR",
+            "list" : ["ko-KR", "en-US"]
+        },
+        "encode" : {
+            "setting": "encode",
+            "default": "sha3",
+            "list" : ["sha3", "sha256"]
+        }
+    }
+
     try:
         setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-        if not 'db_type' in setting_data:
+        if not 'db_type' and 'db_name' and 'host' and 'port' in setting_data:
             try:
                 os.remove('data/setting.json')
             except:
@@ -44,7 +65,7 @@ async def run():
             print('db_type : ' + setting_data['db_type'])
             print('db_name : ' + setting_data['db_name'])
     except:
-        setting_json = ['sqlite', '']
+        setting_json = ['sqlite', '', '', '']
         db_type = ['sqlite']
 
         print('db_type : sqlite')        
@@ -54,11 +75,20 @@ async def run():
         if setting_json[1] == '':
             setting_json[1] = 'data'
 
+        print('host (' + server_setting['host']['default'] + ') : ', end = '')
+        setting_json[2] = str(input())
+        if setting_json[2] == '':
+            setting_json[2] = server_setting['host']['default']
+        
+        print('port (' + server_setting['port']['default'] + ') : ', end = '')
+        setting_json[3] = str(input())
+        if setting_json[3] == '':
+            setting_json[3] = server_setting['port']['default']
+
         with open('data/setting.json', 'w', encoding = 'utf8') as f:
-            f.write('{ "db_name" : "' + setting_json[1] + '", "db_type" : "' + setting_json[0] + '" }')
+            f.write('{ "db_name" : "' + setting_json[1] + '", "db_type" : "' + setting_json[0] + '", "host" : "' + setting_json[2] + '", "port" : "' + setting_json[3] + '" }')
 
-        setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
     db_create = {}
     db_create['table'] = ['doc', 'doc_cac', 'doc_his', 'rec_dis', 'rec_ban', 'rec_log', 'mbr', 'mbr_set', 'mbr_log', 'ban', 'dis', 'acl', 'backlink', 'wiki_set', 'list_per', 'list_fil', 'html_fil', 'list_alarm', 'list_watch', 'list_inter']
@@ -121,7 +151,25 @@ async def run():
     await db.execute('delete from wiki_set where name = "db_ver"')
     await db.execute('insert into wiki_set (name, data) values (?, ?)', ["db_ver", version_load['main']['db_count']])
     await db.commit()
-    
+
+    first_setup = await db.execute('select data from wiki_set where name = "lang"')
+    first_setup = await first_setup.fetchall()
+
+    if not first_setup:
+        print('lang [' + server_setting['lang']['list'][0] + ',' + server_setting['lang']['list'][1] + '] (' + server_setting['lang']['default'] + ') : ', end = '')
+        setting_lang = str(input())
+        if setting_lang == '':
+            setting_lang = server_setting['lang']['default']
+        await db.execute('insert into wiki_set (name, data) values (?, ?)', ['lang', setting_lang])
+        await db.commit()
+
+        print('encode [' + server_setting['encode']['list'][0] + ',' + server_setting['encode']['list'][1] + '] (' + server_setting['encode']['default'] + ') : ', end = '')
+        setting_encode = str(input())
+        if setting_encode == '':
+            setting_encode = server_setting['encode']['default']
+        await db.execute('insert into wiki_set (name, data) values (?, ?)', ['encode', setting_encode])
+        await db.commit()
+
     print("\n", end='')
     
 loop = asyncio.get_event_loop()
@@ -232,30 +280,17 @@ async def wiki_delete(request, name):
     data_get = await db.execute("select data from doc where title = ? ", [name])
     data_get = await data_get.fetchall()
 
-    if data_get:
-        data = data_get[0][0]
-
     if request.method == 'POST':
-        data = request.form.get('wiki_textarea_edit_1', '')
-        send = request.form.get('wiki_textbox_edit_1', '')
-        data = re.sub('\n', '<br>', data)
-        
-        if data_get:
-                await db.execute("update doc set data = ? where title = ?", [data, name])
-                await db.commit()
-                await history_add(name, data, await date_time(), '0', send, '0')
-                return response.redirect("/w/" + name)
-                
-        else:
-            await db.execute("insert into doc (title, data) values (?, ?)", [name, data])
+            send = request.form.get('wiki_textbox_edit_1', '')
+            await db.execute("delete from doc where title = ?", [name])
             await db.commit()
-            await history_add(name, data, await date_time(), '0', send, '0')
+            await history_add(name, '', await date_time(), '0', send, '0')
             return response.redirect("/w/" + name)
             
-    return jinja.render("index.html", request,
+    if data_get:
+        return jinja.render("index.html", request,
             data = '''
                 <form method="post">
-                    <textarea rows="25" class="wiki_textarea" name="wiki_textarea_edit_1">''' + html.escape(re.sub('<br>', '\n', data)) + '''</textarea>
                     <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_edit_1">
                     <button type="submit" class="wiki_button" name="wiki_button_edit_1">확인</button>
                 </form>
@@ -264,6 +299,10 @@ async def wiki_delete(request, name):
             sub = '삭제',
             menu = [['w/' + name, '문서']]
         )
+    else:
+        return response.redirect("/error/") # 오류 페이지 구현 필요
+
+setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
 
 if __name__ == "__main__":
-  app.run(debug=False, access_log=False, host="127.0.0.1", port=3000)
+  app.run(debug=False, access_log=False, host=setting_data['host'], port=setting_data['port'])
