@@ -12,14 +12,14 @@ from route.tool.tool import *
 
 version_load = json.loads(open('data/version.json', encoding='utf-8').read())
 version = version_load["main"]["version"]
-release = version_load["main"]["release"]
-db_count = version_load["main"]["db_count"]
+build_count = version_load["main"]["build_count"]
+renew_count = version_load["main"]["renew_count"]
 
 print('')
 print('VientoEngine')
 print('version : ' + version)
-print('release : ' + release)
-print('db_count : ' + db_count)
+print('build_count : ' + build_count)
+print('renew_count : ' + renew_count)
 print('')
 
 for route_file in os.listdir("route"):
@@ -64,6 +64,9 @@ async def run():
         else:
             print('db_type : ' + setting_data['db_type'])
             print('db_name : ' + setting_data['db_name'])
+            print('\n', end='')
+            print('host : ' + setting_data['host'])
+            print('port : ' + setting_data['port'])
     except:
         setting_json = ['sqlite', '', '', '']
         db_type = ['sqlite']
@@ -74,6 +77,8 @@ async def run():
         setting_json[1] = str(input())
         if setting_json[1] == '':
             setting_json[1] = 'data'
+
+        print('\n', end='')
 
         print('host (' + server_setting['host']['default'] + ') : ', end = '')
         setting_json[2] = str(input())
@@ -109,7 +114,7 @@ async def run():
         if not db_ver:
             db_setup = 1
         else:
-            if int(version_load['main']['db_count']) > int(db_ver[0][0]):
+            if int(version_load['main']['renew_count']) > int(db_ver[0][0]):
                 db_setup = 1
     except:
         db_setup = 1
@@ -149,26 +154,32 @@ async def run():
                     pass
 
     await db.execute('delete from wiki_set where name = "db_ver"')
-    await db.execute('insert into wiki_set (name, data) values (?, ?)', ["db_ver", version_load['main']['db_count']])
+    await db.execute('insert into wiki_set (name, data) values (?, ?)', ["db_ver", version_load['main']['renew_count']])
     await db.commit()
 
     first_setup = await db.execute('select data from wiki_set where name = "lang"')
     first_setup = await first_setup.fetchall()
 
     if not first_setup:
-        print('lang [' + server_setting['lang']['list'][0] + ',' + server_setting['lang']['list'][1] + '] (' + server_setting['lang']['default'] + ') : ', end = '')
+        print('lang [' + server_setting['lang']['list'][0] + ', ' + server_setting['lang']['list'][1] + '] (' + server_setting['lang']['default'] + ') : ', end = '')
         setting_lang = str(input())
         if setting_lang == '':
             setting_lang = server_setting['lang']['default']
         await db.execute('insert into wiki_set (name, data) values (?, ?)', ['lang', setting_lang])
         await db.commit()
 
-        print('encode [' + server_setting['encode']['list'][0] + ',' + server_setting['encode']['list'][1] + '] (' + server_setting['encode']['default'] + ') : ', end = '')
+        print('encode [' + server_setting['encode']['list'][0] + ', ' + server_setting['encode']['list'][1] + '] (' + server_setting['encode']['default'] + ') : ', end = '')
         setting_encode = str(input())
         if setting_encode == '':
             setting_encode = server_setting['encode']['default']
         await db.execute('insert into wiki_set (name, data) values (?, ?)', ['encode', setting_encode])
         await db.commit()
+    else:
+        encode_check = await db.execute('select data from wiki_set where name = "encode"')
+        encode_check = await encode_check.fetchall()
+        
+        print('lang : ' + first_setup[0][0])
+        print('encode : ' + encode_check[0][0])
 
     print("\n", end='')
     
