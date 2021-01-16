@@ -17,7 +17,7 @@ Sanic과 aiosqlite를 사용하며, 오픈나무 3.2.0 버전과 호환됩니다
 ## 시작
 VientoEngine은 Python 3 기반 애플리케이션이며, Python 3.6 이상 버전이 동작하는 환경이 필요합니다.
 
-자세한 내용은 [설치 가이드](https://viento.badawiki.site/install_guide.html)를 참조하세요.
+자세한 내용은 [설치 가이드](https://viento.badawiki.site#main2)를 참조하세요.
 
 ## 기여
 VientoEngine에는 버그나 여러 문제점이 존재할 수 있습니다. [이슈 트래커](https://github.com/BadaWikiDev/VientoEngine/issues)에 보고하여 완성도를 높이는 데 도움을 줄 수 있습니다. 직접 새로운 기능을 추가하거나, 버그를 고치는 등의 코드 수정도 [Pull requests](https://github.com/BadaWikiDev/VientoEngine/pulls)로 가능합니다.
@@ -42,14 +42,14 @@ VientoEngine은 BSD 3-Clause License 라이선스로 보호받고 있습니다. 
 
 다음과 같은 프로젝트, 코드를 사용했습니다.
  * [openNAMU](https://github.com/2du/openNAMU) - namumark.py
- * [highlightjs](https://highlightjs.org/) -Syntax highlighting
+ * [highlightjs](https://highlightjs.org/) - Syntax highlighting
  * [MathJax](https://www.mathjax.org/) - Numerical expression
  * [shortcut.js](http://www.openjs.com/scripts/events/keyboard_shortcuts/) - Keyboard Shortcuts
 
 ## 오픈나무
 VientoEngine은 [오픈나무](https://github.com/2du/openNAMU)와 호환됩니다. 하지만 아직 완벽하게 호환되지는 않으며, 일부 수정이 필요합니다.
 
-자세한 내용은 [마이그레이션 가이드](https://viento.badawiki.site/change_engine.html)를 참조하세요.
+자세한 내용은 [마이그레이션 가이드](https://viento.badawiki.site#main3)를 참조하세요.
 
 ## 기타
  * [공식 사이트](https://viento.badawiki.site)
