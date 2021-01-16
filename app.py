@@ -1,8 +1,8 @@
 from sanic import Sanic, response, Blueprint
 from sanic_jinja2 import SanicJinja2
+from sanic_auth import Auth, User
 import aiosqlite
 import asyncio
-import aiohttp
 import json
 import html
 import os
