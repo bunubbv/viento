@@ -292,7 +292,7 @@ async def wiki_delete(request, name):
     data_get = await data_get.fetchall()
 
     if request.method == 'POST':
-            send = request.form.get('wiki_textbox_edit_1', '')
+            send = request.form.get('wiki_textbox_delete_1', '')
             await db.execute("delete from doc where title = ?", [name])
             await db.commit()
             await history_add(name, '', await date_time(), '0', send, '0')
@@ -302,7 +302,7 @@ async def wiki_delete(request, name):
         return jinja.render("index.html", request,
             data = '''
                 <form method="post">
-                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_edit_1">
+                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_delete_1">
                     <button type="submit" class="wiki_button" name="wiki_button_edit_1">확인</button>
                 </form>
             ''',
@@ -314,6 +314,39 @@ async def wiki_delete(request, name):
         return response.redirect("/error/") # 오류 페이지 구현 필요
 
 setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+
+@app.route("/move/<name:string>", methods=['POST', 'GET'])
+async def wiki_move(request, name):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    data_get = await db.execute("select data from doc where title = ? ", [name])
+    data_get = await data_get.fetchall()
+
+    if request.method == 'POST':
+            change_name = request.form.get('wiki_textbox_move_1', '')
+            send = request.form.get('wiki_textbox_move_2', '')
+            await db.execute("update doc set title = ? where title = ?", [change_name, name])
+            await db.execute("update doc_his set title = ? where title = ?", [change_name, name])
+            await db.commit()
+            await history_add(change_name, '', await date_time(), '0', send, '0')
+            return response.redirect("/w/" + change_name)
+            
+    if data_get:
+        return jinja.render("index.html", request,
+            data = '''
+                <form method="post">
+                    <input type="text" value="''' + name + '''" class="wiki_textbox" name="wiki_textbox_move_1">
+                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_move_2">
+                    <button type="submit" class="wiki_button" name="wiki_button_edit_1">확인</button>
+                </form>
+            ''',
+            title = name,
+            sub = '이동',
+            menu = [['w/' + name, '문서']]
+        )
+    else:
+        return response.redirect("/error/") # 오류 페이지 구현 필요
 
 if __name__ == "__main__":
   app.run(debug=False, access_log=False, host=setting_data['host'], port=setting_data['port'])
