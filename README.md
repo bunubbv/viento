@@ -45,6 +45,9 @@ VientoEngine은 BSD 3-Clause License 라이선스로 보호받고 있습니다. 
  * [highlightjs](https://highlightjs.org/) - Syntax highlighting
  * [MathJax](https://www.mathjax.org/) - Numerical expression
  * [shortcut.js](http://www.openjs.com/scripts/events/keyboard_shortcuts/) - Keyboard Shortcuts
+ * [sanic-jinja2](https://github.com/lixxu/sanic-jinja2) - Jinja2 support for Sanic
+ * [sanic-ipware](https://github.com/vltr/sanic-ipware) - Get client ip address
+ * [sanic-auth](https://github.com/pyx/sanic-auth) - Authentication for Sanic
 
 ## 오픈나무
 VientoEngine은 [오픈나무](https://github.com/2du/openNAMU)와 호환됩니다. 하지만 아직 완벽하게 호환되지는 않으며, 일부 수정이 필요합니다.
