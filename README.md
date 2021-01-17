@@ -6,6 +6,8 @@ VientoEngine은 Python 기반의 [오픈나무](https://github.com/2du/openNAMU)
 
 Sanic과 aiosqlite를 사용하며, 오픈나무 3.2.0 버전과 호환됩니다.
 
+아직 개발 중이므로 실제 위키에 적용해도 사용이 거의 불가능합니다.
+
 ### TOC
  * [시작](#시작)
  * [기여](#기여)
@@ -44,10 +46,9 @@ VientoEngine은 BSD 3-Clause License 라이선스로 보호받고 있습니다. 
  * [openNAMU](https://github.com/2du/openNAMU) - namumark.py
  * [highlightjs](https://highlightjs.org/) - Syntax highlighting
  * [MathJax](https://www.mathjax.org/) - Numerical expression
- * [shortcut.js](http://www.openjs.com/scripts/events/keyboard_shortcuts/) - Keyboard Shortcuts
  * [sanic-jinja2](https://github.com/lixxu/sanic-jinja2) - Jinja2 support for Sanic
  * [sanic-ipware](https://github.com/vltr/sanic-ipware) - Get client ip address
- * [sanic-auth](https://github.com/pyx/sanic-auth) - Authentication for Sanic
+ * [sanic-session](https://github.com/xen/sanic_session) - session management extension
 
 ## 오픈나무
 VientoEngine은 [오픈나무](https://github.com/2du/openNAMU)와 호환됩니다. 하지만 아직 완벽하게 호환되지는 않으며, 일부 수정이 필요합니다.

@@ -1,7 +1,7 @@
 from sanic import Sanic, response, Blueprint
 from sanic.request import RequestParameters
 from sanic_jinja2 import SanicJinja2
-from sanic_auth import Auth, User
+from sanic_session import Session, InMemorySessionInterface
 import aiosqlite
 import asyncio
 import json
@@ -188,7 +188,8 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(run())
     
 app = Sanic(__name__)
-jinja = SanicJinja2(app, pkg_path='skins') 
+jinja = SanicJinja2(app, pkg_path='skins')
+session = Session(app, interface=InMemorySessionInterface())
     
 ## 주소 설정
 
@@ -384,6 +385,11 @@ async def wiki_revert(request, name):
         )
     else:
         return response.redirect("/error/") # 오류 페이지 구현 필요
+
+@app.route("/member/signup", methods=['POST', 'GET'])
+async def wiki_signup(request):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
 if __name__ == "__main__":
   app.run(debug=False, access_log=False, host=setting_data['host'], port=setting_data['port'])
