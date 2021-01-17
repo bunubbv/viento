@@ -3,4 +3,3 @@ sanic_jinja2
 sanic_ipware
 sanic_session
 aiosqlite
-pysha3; python_version < "3.6"
