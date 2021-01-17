@@ -391,5 +391,14 @@ async def wiki_signup(request):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
+@app.route("/member/login", methods=['POST', 'GET'])
+async def wiki_login(request):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+@app.route("/member/logout", methods=['POST', 'GET'])
+async def wiki_logout(request):
+    return response.redirect("/") # 대문 등 기본적인 설정 완료되면 수정
+
 if __name__ == "__main__":
   app.run(debug=False, access_log=False, host=setting_data['host'], port=setting_data['port'])
