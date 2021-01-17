@@ -1,4 +1,5 @@
 from sanic import Sanic, response, Blueprint
+from sanic.request import RequestParameters
 from sanic_jinja2 import SanicJinja2
 from sanic_auth import Auth, User
 import aiosqlite
@@ -303,7 +304,7 @@ async def wiki_delete(request, name):
             data = '''
                 <form method="post">
                     <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_delete_1">
-                    <button type="submit" class="wiki_button" name="wiki_button_edit_1">확인</button>
+                    <button type="submit" class="wiki_button" name="wiki_button_delete_1">확인</button>
                 </form>
             ''',
             title = name,
@@ -338,11 +339,47 @@ async def wiki_move(request, name):
                 <form method="post">
                     <input type="text" value="''' + name + '''" class="wiki_textbox" name="wiki_textbox_move_1">
                     <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_move_2">
-                    <button type="submit" class="wiki_button" name="wiki_button_edit_1">확인</button>
+                    <button type="submit" class="wiki_button" name="wiki_button_move_1">확인</button>
                 </form>
             ''',
             title = name,
             sub = '이동',
+            menu = [['w/' + name, '문서']]
+        )
+    else:
+        return response.redirect("/error/") # 오류 페이지 구현 필요
+
+@app.route("/revert/<name:string>", methods=['POST', 'GET'])
+async def wiki_revert(request, name):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    args = RequestParameters()
+    num = request.args.get('num', '1')
+
+    data_get = await db.execute("select data from doc_his where id = ?", [num])
+    data_get = await data_get.fetchall()
+    data_get = data_get[0][0]
+
+    if request.method == 'POST':
+        send = request.form.get('wiki_textbox_revert_1', '')
+        data_get = re.sub('\n', '<br>', data_get)
+        await db.execute("update doc set data = ? where title = ?", [data_get, name])
+        await db.commit()
+        await history_add(name, data_get, await date_time(), '0', send, '0')
+        return response.redirect("/w/" + name)
+
+    if data_get:
+        return jinja.render("index.html", request,
+            data = '''
+                <form method="post">
+                    <textarea rows="25" class="wiki_textarea" name="wiki_textarea_revert_1" readonly>''' + data_get + '''</textarea>
+                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_revert_2">
+                    <button type="submit" class="wiki_button" name="wiki_button_revert_1">확인</button>
+                </form>
+            ''',
+            title = name,
+            sub = 'r' + num + ' 복구',
             menu = [['w/' + name, '문서']]
         )
     else:

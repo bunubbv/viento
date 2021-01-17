@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>{{ title }} - wiki</title>
+		<title>{{ title }} {% if sub != 0 %}({{ sub }}){% endif %} - wiki</title>
 		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/moonspam/NanumBarunGothic@latest/nanumbarungothicsubset.css">
 		<style>
 			html { height: 100%; }
@@ -21,6 +21,7 @@
 			#skin_bottom { position: absolute; left: 0; bottom: 0; width: 100%; }
 			#skin_content { min-height: 100%; position: relative; }	
 			textarea { width: 100%; border: 1px solid #ccc; }
+			#sub { font-size: 42px; }
 			
 		</style>
 	</head>
@@ -44,7 +45,7 @@
 			</div>
 			<div id="skin_top">
 				<div class="skin_container">
-					<div class="skin_title">{{ title }}</div>
+					<div class="skin_title">{{ title }} {% if sub != 0 %}<span id="sub">({{ sub }})</span>{% endif %}</div>
 					<div class="skin_date"> date 에 마지막으로 편집되었습니다. </div>
 				</div>
 			</div>
