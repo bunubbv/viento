@@ -193,6 +193,19 @@ session = Session(app, interface=InMemorySessionInterface())
     
 ## 주소 설정
 
+@app.route('/')
+async def wiki_frontpage(request):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    data_get = await db.execute("select data from wiki_set where name = ?", ['frontpage'])
+    data_get = await data_get.fetchall()
+
+    if data_get:
+        return response.redirect('/w/' + data_get[0][0])
+    else:
+        return response.redirect('/w/FrontPage')
+
 @app.route("/w/<name:string>")
 async def wiki_read(request, name):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
@@ -390,6 +403,19 @@ async def wiki_revert(request, name):
 async def wiki_signup(request):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    return jinja.render("index.html", request,
+        data = '''
+            <form method="post">
+                <textarea rows="25" class="wiki_textarea" name="wiki_textarea_revert_1" readonly>''' + data_get + '''</textarea>
+                <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_revert_2">
+                <button type="submit" class="wiki_button" name="wiki_button_revert_1">확인</button>
+            </form>
+        ''',
+        title = '로그인',
+        sub = 0,
+        menu = 0
+    )
 
 @app.route("/member/login", methods=['POST', 'GET'])
 async def wiki_login(request):
