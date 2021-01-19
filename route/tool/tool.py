@@ -20,14 +20,20 @@ async def user_link(name):
         return '<a href="/w/사용자:' + name + '">' + name + '</a>' 
 
 async def namespace_check(data):
+    return 0
 
 async def wiki_setting():
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
 async def user_check():
+    return 0
 
 async def admin_check(data):
+    return 0
 
 async def acl_check(data):
+    return 0
 
 async def history_add(title, data, date, ip, send, leng):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
@@ -50,5 +56,7 @@ async def history_add(title, data, date, ip, send, leng):
     await db.commit()
 
 async def password_encode(data):
+    return 0
 
 async def password_check(data):
+    return 0

@@ -9,10 +9,10 @@
 			body { font-family: NanumBarunGothic, sans-serif!important; font-size: 14.5px; padding: 0; margin: 0; height: 100%; }
 			.skin_container { margin-left: auto; margin-right: auto; padding: 18px; width: 900px; }
 			#skin_nav { background-color: white; display: flex; font-size: 16px; }
-			#skin_top { height: 40vh; background: linear-gradient(to right, #00afff, #008dcf); font-size: 48px; font-weight: 600; color: white; display: flex; }
+			#skin_top { height: 40vh; background: linear-gradient(to right, #00afff, #008dcf); font-size: 42px; font-weight: 600; color: white; display: flex; }
 			.skin_nav_li { display: inline-block; padding-right: 20px; }
 			#skin_nav_search { display: inline; float: right; }
-			.skin_title { vertical-align: text-bottom; margin-top: 190px; margin-top: calc(40vh - 110px); }
+			.skin_title { vertical-align: text-bottom; margin-top: 190px; margin-top: calc(40vh - 105px); }
 			.skin_date { font-size: 14.5px; font-weight: 500; }
 			a { background: linear-gradient(to right, #00afff, #008dcf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
 			.skin_footer { text-align: center; margin-top: 20px; margin-bottom: 20px; }
@@ -22,7 +22,7 @@
 			#skin_content { min-height: 100%; position: relative; }	
 			input { width: 100%; border: 1px solid #ccc; }
 			textarea { width: 100%; border: 1px solid #ccc; }
-			#sub { font-size: 42px; }
+			#sub { font-size: 40px; }
 			
 		</style>
 	</head>
@@ -52,13 +52,13 @@
 			</div>
 			<div id="skin_middle">
 				<div class="skin_container">
+					{% if menu != 0 %}
 					<span id="skin_toolbar">
-						{% if menu != 0 %}
-							{% for button in menu %}
+						{% for button in menu %}
 								<a href="/{{button[0]}}" class="skin_toolbar_button">{{button[1]}}</a>
-							{% endfor %}
-						{% endif %}
+						{% endfor %}
 					</span>
+					{% endif %}
 					<div id="skin_data">
 						{{ data }}
 					</div>

@@ -407,12 +407,13 @@ async def wiki_signup(request):
     return jinja.render("index.html", request,
         data = '''
             <form method="post">
-                <textarea rows="25" class="wiki_textarea" name="wiki_textarea_revert_1" readonly>''' + data_get + '''</textarea>
-                <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_revert_2">
-                <button type="submit" class="wiki_button" name="wiki_button_revert_1">확인</button>
+                <input type="text" placeholder="ID" class="wiki_textbox" name="wiki_textbox_signup_1">
+                <input type="text" placeholder="Password" class="wiki_textbox" name="wiki_textbox_signup_2">
+                <input type="text" placeholder="Email (not working)" class="wiki_textbox" name="wiki_textbox_signup_3">
+                <button type="submit" class="wiki_button" name="wiki_button_signup_1">확인</button>
             </form>
         ''',
-        title = '로그인',
+        title = '계정 만들기',
         sub = 0,
         menu = 0
     )
