@@ -1,13 +1,14 @@
 from sanic_ipware import get_client_ip
 import aiosqlite
 import datetime
+import hashlib
 import json
 import re
 
 async def date_time():
     return str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
 
-async def get_ip(request):
+async def user_name():
     return str(get_client_ip(request, request_header_order=['Forwarded-For', 'X-Forwarded-For']))
 
 async def user_link(name):
@@ -17,6 +18,16 @@ async def user_link(name):
         return '<a href="/contribution/' + name + '/changes">' + name + '</a>'
     else:
         return '<a href="/w/사용자:' + name + '">' + name + '</a>' 
+
+async def namespace_check(data):
+
+async def wiki_setting():
+
+async def user_check():
+
+async def admin_check(data):
+
+async def acl_check(data):
 
 async def history_add(title, data, date, ip, send, leng):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
@@ -37,3 +48,7 @@ async def history_add(title, data, date, ip, send, leng):
 
     await db.execute("insert into doc_his (id, title, data, date, ip, send, leng) values (?, ?, ?, ?, ?, ?, ?)", [id, title, data, date, ip, send, leng])
     await db.commit()
+
+async def password_encode(data):
+
+async def password_check(data):
