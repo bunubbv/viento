@@ -10,6 +10,7 @@ import os
 import re
 
 from route.tool.tool import *
+from route.mark.namumark import *
 
 version_load = json.loads(open('data/version.json', encoding='utf-8').read())
 version = version_load["main"]["version"]
@@ -214,9 +215,12 @@ async def wiki_read(request, name):
     data = await db.execute("select data from doc where title = ?", [name])
     data = await data.fetchall()
 
+    if data:
+        data_display = await namumark(data[0][0])
+
     if data:    
         return jinja.render("index.html", request,
-            data = data[0][0],
+            data = data_display,
             title = name,
             sub = 0,
             menu = [['edit/' + name, '편집'], ['discuss/' + name, '토론'], ['backlink/' + name, '역링크'], ['history/' + name, '역사'], ['acl/' + name, 'ACL']]
@@ -245,19 +249,20 @@ async def wiki_edit(request, name):
     if request.method == 'POST':
         data = request.form.get('wiki_textarea_edit_1', '')
         send = request.form.get('wiki_textbox_edit_1', '')
-        data = re.sub('\n', '<br>', data)
         
         if data_get:
-            if data_get == data:
+            if data_get[0][0] == data:
                 return response.redirect("/w/" + name)
             
             else:
+                data = re.sub('\n', '<br>', data)
                 await db.execute("update doc set data = ? where title = ?", [data, name])
                 await db.commit()
                 await history_add(name, data, await date_time(), '0', send, '0')
                 return response.redirect("/w/" + name)
                 
         else:
+            data = re.sub('\n', '<br>', data)
             await db.execute("insert into doc (title, data) values (?, ?)", [name, data])
             await db.commit()
             await history_add(name, data, await date_time(), '0', send, '0')
