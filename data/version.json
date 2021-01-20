@@ -1,7 +1,7 @@
 { 
 	"main": {
-		"version": "v0.0.9-alpha",
-		"build_count": "2021-01-19.001",
+		"version": "v0.1.0-alpha",
+		"build_count": "2021-01-20.001",
 		"renew_count": "0"
 	}
 }

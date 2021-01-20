@@ -190,6 +190,7 @@ loop.run_until_complete(run())
 app = Sanic(__name__)
 jinja = SanicJinja2(app, pkg_path='skins')
 session = Session(app, interface=InMemorySessionInterface())
+app.static('/skins', './skins')
     
 ## 주소 설정
 
