@@ -412,7 +412,7 @@ async def wiki_signup(request):
         if signup_password_1 != signup_password_2:
             return response.redirect("/error/")
 
-        if re.search("(?:[^A-Za-z0-9])", signup_id):
+        if re.search("(?:[^A-Za-z0-9가-힣])", signup_id):
             return response.redirect("/error/")
 
         if signup_password_1 == '':
