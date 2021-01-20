@@ -56,7 +56,16 @@ async def history_add(title, data, date, ip, send, leng):
     await db.commit()
 
 async def password_encode(data):
-    return 0
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    encode_type = await db.execute('select data from wiki_set where name = "encode"')
+    encode_type = await encode_type.fetchall()
+
+    if encode_type[0][0] == 'sha256':
+        return hashlib.sha256(bytes(data, 'utf-8')).hexdigest()
+    elif encode_type[0][0] == 'sha3':
+        return hashlib.sha3_256(bytes(data, 'utf-8')).hexdigest()
 
 async def password_check(data):
     return 0

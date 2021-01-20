@@ -127,7 +127,7 @@ async def run():
         db_create['rec_dis'] = ['title', 'sub', 'date', 'band', 'stop', 'agree']
         db_create['rec_ban'] = ['block', 'end', 'today', 'blocker', 'why', 'band']
         db_create['rec_log'] = ['who', 'what', 'time']
-        db_create['mbr'] = ['id', 'pw', 'acl', 'date', 'encode']
+        db_create['mbr'] = ['id', 'pw', 'acl', 'date', 'email']
         db_create['mbr_set'] = ['name', 'id', 'data']
         db_create['mbr_log'] = ['name', 'ip', 'ua', 'today', 'sub']
         db_create['ban'] = ['block', 'end', 'why', 'band', 'login']
@@ -167,7 +167,6 @@ async def run():
         if setting_lang == '':
             setting_lang = server_setting['lang']['default']
         await db.execute('insert into wiki_set (name, data) values (?, ?)', ['lang', setting_lang])
-        await db.commit()
 
         print('encode [' + server_setting['encode']['list'][0] + ', ' + server_setting['encode']['list'][1] + '] (' + server_setting['encode']['default'] + ') : ', end = '')
         setting_encode = str(input())
@@ -405,12 +404,40 @@ async def wiki_signup(request):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
+    if request.method == 'POST':
+        signup_id = request.form.get('wiki_textbox_signup_1', '')
+        signup_password_1 = request.form.get('wiki_textbox_signup_2', '')
+        signup_password_2 = request.form.get('wiki_textbox_signup_2', '')
+
+        if signup_password_1 != signup_password_2:
+            return response.redirect("/error/")
+
+        if re.search("(?:[^A-Za-z0-9])", signup_id):
+            return response.redirect("/error/")
+
+        if signup_password_1 == '':
+            return response.redirect("/error/")
+
+        if len(signup_id) > 32:
+            return response.redirect("/error/")
+
+        id_check = await db.execute("select id from mbr where id = ?", [signup_id])
+        id_check = await id_check.fetchall()
+
+        if id_check:
+            return response.redirect("/error/")
+
+        encode_password = await password_encode(signup_password_1)
+        await db.execute("insert into mbr (id, pw, acl, date, email) values (?, ?, ?, ?, ?)", [signup_id, encode_password, 'member', await date_time(), '']) ## 추후 권한 기본 설정과 이메일 구현되면 수정 필요, mbr_log 기록 필요.
+        await db.commit() ## 보안을 위해 비밀번호 인코딩 시 추가로 넣을 원하는 문자 선택 가능하도록 추후 구현.
+        return response.redirect("/member/login")
+
     return jinja.render("index.html", request,
         data = '''
             <form method="post">
-                <input type="text" placeholder="ID" class="wiki_textbox" name="wiki_textbox_signup_1">
-                <input type="text" placeholder="Password" class="wiki_textbox" name="wiki_textbox_signup_2">
-                <input type="text" placeholder="Email (not working)" class="wiki_textbox" name="wiki_textbox_signup_3">
+                <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_textbox_signup_1">
+                <input type="text" placeholder="비밀번호" class="wiki_textbox" name="wiki_textbox_signup_2">
+                <input type="text" placeholder="비밀번호 확인" class="wiki_textbox" name="wiki_textbox_signup_3">
                 <button type="submit" class="wiki_button" name="wiki_button_signup_1">확인</button>
             </form>
         ''',

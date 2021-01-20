@@ -26,7 +26,7 @@ body {
 #skin_top {
     height: 40vh;
     background: linear-gradient(to right, #00afff, #008dcf);
-    font-size: 42px;
+    font-size: 46px;
     font-weight: 600;
     color: white;
     display: flex;
@@ -45,7 +45,7 @@ body {
 .skin_title {
     vertical-align: text-bottom;
     margin-top: 190px;
-    margin-top: calc(40vh - 105px);
+    margin-top: calc(40vh - 110px);
 }
 
 .skin_date {
