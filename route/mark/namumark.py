@@ -26,4 +26,14 @@ async def namumark(data):
     if del_2_text:
         data = re.sub("--.*?--", "<s>" + del_2_text.group(1) + "</s>", data)
 
+    ## 위첨자
+    sup_text = re.search("^^(.*?)^^", data)
+    if sup_text:
+        data = re.sub("^^.*?^^", "<sup>" + sup_text.group(1) + "</sup>", data)
+
+    ## 아래첨자
+    sub_text = re.search("__(.*?)__", data)
+    if sub_text:
+        data = re.sub("__.*?__", "<sub>" + sub_text.group(1) + "</sub>", data)
+
     return data
