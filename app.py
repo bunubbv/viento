@@ -1,8 +1,9 @@
 from sanic import Sanic, response, Blueprint
 from sanic.request import RequestParameters
 from sanic_jinja2 import SanicJinja2
-from sanic_session import Session, InMemorySessionInterface
+from sanic_session import Session, AIORedisSessionInterface
 import aiosqlite
+import aioredis
 import asyncio
 import json
 import html
@@ -13,13 +14,15 @@ from route.tool.tool import *
 from route.mark.namumark import *
 
 version_load = json.loads(open('data/version.json', encoding='utf-8').read())
-version = version_load["main"]["version"]
+engine_version = version_load["main"]["engine_version"]
+markup_version = version_load["main"]["markup_version"]
 build_count = version_load["main"]["build_count"]
 renew_count = version_load["main"]["renew_count"]
 
 print('')
 print('VientoEngine')
-print('version : ' + version)
+print('engine_version : ' + engine_version)
+print('markup_version : ' + markup_version)
 print('build_count : ' + build_count)
 print('renew_count : ' + renew_count)
 print('')
@@ -189,10 +192,20 @@ loop.run_until_complete(run())
     
 app = Sanic(__name__)
 jinja = SanicJinja2(app, pkg_path='skins')
-session = Session(app, interface=InMemorySessionInterface())
+session = Session()
 app.static('/skins', './skins')
     
 ## 주소 설정
+
+'''@app.listener('before_server_start')
+async def server_init(app, loop):
+    app.redis = await aioredis.create_pool(
+        ('localhost', 6379),
+        minsize=5,
+        maxsize=10,
+        loop=loop
+    )
+    session.init_app(app, interface=AIORedisSessionInterface(app.redis))'''
 
 @app.route('/')
 async def wiki_frontpage(request):
@@ -215,12 +228,9 @@ async def wiki_read(request, name):
     data = await db.execute("select data from doc where title = ?", [name])
     data = await data.fetchall()
 
-    if data:
-        data_display = await namumark(data[0][0])
-
     if data:    
         return jinja.render("index.html", request,
-            data = data_display,
+            data = await namumark(data[0][0]),
             title = name,
             sub = 0,
             menu = [['edit/' + name, '편집'], ['discuss/' + name, '토론'], ['backlink/' + name, '역링크'], ['history/' + name, '역사'], ['acl/' + name, 'ACL']]
@@ -290,9 +300,9 @@ async def wiki_history(request, name):
     data_get = await db.execute("select id, title, date, ip, send, leng from doc_his where title = ? order by id + 0 desc limit 30", [name])
     data_get = await data_get.fetchall()
 
-    #if request.method == 'POST': 비교 기능 등
+    # if request.method == 'POST': 비교 기능 등
 
-    for data_history in data_get:
+    for data_history in data_get: # 비동기 아님. 추후 교체 필요.
         if data_get:
             data += '<li>' + data_history[2] + ' ' + data_history[3] + '</li>'
 
@@ -415,16 +425,13 @@ async def wiki_signup(request):
         signup_password_2 = request.form.get('wiki_textbox_signup_2', '')
 
         if signup_password_1 != signup_password_2:
-            return response.redirect("/error/")
+            return response.redirect("/error/") # 오류 페이지 구현 필요
 
         if re.search("(?:[^A-Za-z0-9가-힣])", signup_id):
-            return response.redirect("/error/")
+            return response.redirect("/error/") # 오류 페이지 구현 필요
 
-        if signup_password_1 == '':
-            return response.redirect("/error/")
-
-        if len(signup_id) > 32:
-            return response.redirect("/error/")
+        if len(signup_id) > 24 or len(signup_id) < 3:
+            return response.redirect("/error/") # 오류 페이지 구현 필요
 
         id_check = await db.execute("select id from mbr where id = ?", [signup_id])
         id_check = await id_check.fetchall()
@@ -433,8 +440,8 @@ async def wiki_signup(request):
             return response.redirect("/error/")
 
         encode_password = await password_encode(signup_password_1)
-        await db.execute("insert into mbr (id, pw, acl, date, email) values (?, ?, ?, ?, ?)", [signup_id, encode_password, 'member', await date_time(), '']) ## 추후 권한 기본 설정과 이메일 구현되면 수정 필요, mbr_log 기록 필요.
-        await db.commit() ## 보안을 위해 비밀번호 인코딩 시 추가로 넣을 원하는 문자 선택 가능하도록 추후 구현.
+        await db.execute("insert into mbr (id, pw, acl, date, email) values (?, ?, ?, ?, ?)", [signup_id, encode_password, 'member', await date_time(), '']) # 추후 권한 기본 설정과 이메일 구현되면 수정 필요, mbr_log 기록 필요.
+        await db.commit() # 보안을 위해 비밀번호 인코딩 시 추가로 넣을 원하는 문자 선택 가능하도록 추후 구현.
         return response.redirect("/member/login")
 
     return jinja.render("index.html", request,
@@ -455,6 +462,19 @@ async def wiki_signup(request):
 async def wiki_login(request):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    return jinja.render("index.html", request,
+        data = '''
+            <form method="post">
+                <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_textbox_login_1">
+                <input type="text" placeholder="비밀번호" class="wiki_textbox" name="wiki_textbox_login_2">
+                <button type="submit" class="wiki_button" name="wiki_button_login_1">확인</button>
+            </form>
+        ''',
+        title = '로그인',
+        sub = 0,
+        menu = 0
+    )
 
 @app.route("/member/logout", methods=['POST', 'GET'])
 async def wiki_logout(request):
