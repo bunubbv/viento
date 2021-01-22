@@ -1,9 +1,13 @@
-from sanic_ipware import get_client_ip
-import aiosqlite
 import datetime
 import hashlib
 import json
 import re
+import secrets
+import binascii
+
+import aiosqlite
+from sanic_ipware import get_client_ip
+
 
 async def date_time():
     return str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
@@ -66,6 +70,38 @@ async def password_encode(data):
         return hashlib.sha256(bytes(data, 'utf-8')).hexdigest()
     elif encode_type[0][0] == 'sha3':
         return hashlib.sha3_256(bytes(data, 'utf-8')).hexdigest()
+    elif encode_type[0][0] == 'pbkdf2-sha512':
+        #TODO : Need slow password hash algorithm
+        return CreateAuth('username-fixed', data)
+
+
 
 async def password_check(data):
     return 0
+
+
+def _hashpass(username: str, password: str, salt: str):
+    hashsalt = (salt + username).encode('utf-8')
+    password = password.encode('utf-8')
+    curhash = hashlib.pbkdf2_hmac('sha512',password,hashsalt,100000,dklen=256)
+    curhash = binascii.hexlify(curhash)
+    curhash = str(curhash)
+    #print(curhash)
+    return curhash[2:-1]
+
+
+def CreateAuth(username: str, password: str):
+    #min: 16+
+    SALT_LEN=16
+    salt = secrets.token_hex(SALT_LEN)
+    curhash = _hashpass(username,password,salt)
+    return str(salt+'$'+curhash)
+
+
+def VerifyAuth(username:str,password:str,authstr:str):
+    salt = authstr.split('$')[0]
+    hashdata = authstr.split('$')[1]
+    if _hashpass(username,password,salt) == hashdata:
+        return True
+    else:
+        return False

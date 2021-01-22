@@ -28,7 +28,7 @@ print('renew_count : ' + renew_count)
 print('')
 
 for route_file in os.listdir("route"):
-    py_file = re.search("(.+)\.py$", route_file)
+    py_file = re.search(r"(.+)\.py$", route_file)
     if py_file:
         py_file = py_file.groups()[0]
 
