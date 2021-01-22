@@ -56,5 +56,5 @@ VientoEngine은 [오픈나무](https://github.com/2du/openNAMU)와 호환됩니�
 자세한 내용은 [마이그레이션 가이드](https://viento.badawiki.site#main3)를 참조하세요.
 
 ## 기타
- * [공식 사이트](https://viento.badawiki.site)
+ * [공식 사이트](https://viento.badawiki.site/)
  * [기여자 목록](https://github.com/BadaWikiDev/VientoEngine/graphs/contributors)
