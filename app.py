@@ -53,8 +53,8 @@ async def run():
         },
         "encode" : {
             "setting": "encode",
-            "default": "sha3",
-            "list" : ["sha3", "sha256"]
+            "default": "pbkdf2-sha512",
+            "list" : ["sha3", "sha256", "pbkdf2-sha512"]
         }
     }
 
@@ -166,13 +166,15 @@ async def run():
     first_setup = await first_setup.fetchall()
 
     if not first_setup:
-        print('lang [' + server_setting['lang']['list'][0] + ', ' + server_setting['lang']['list'][1] + '] (' + server_setting['lang']['default'] + ') : ', end = '')
+        lang = server_setting['lang']['list'][0] + ', ' + server_setting['lang']['list'][1]
+        print('lang [' + lang + '] (' + server_setting['lang']['default'] + ') : ', end = '')
         setting_lang = str(input())
         if setting_lang == '':
             setting_lang = server_setting['lang']['default']
         await db.execute('insert into wiki_set (name, data) values (?, ?)', ['lang', setting_lang])
 
-        print('encode [' + server_setting['encode']['list'][0] + ', ' + server_setting['encode']['list'][1] + '] (' + server_setting['encode']['default'] + ') : ', end = '')
+        encode = server_setting['encode']['list'][0] + ', ' + server_setting['encode']['list'][1] + ', ' + server_setting['encode']['list'][2]
+        print('encode [' + encode + '] (' + server_setting['encode']['default'] + ') : ', end = '')
         setting_encode = str(input())
         if setting_encode == '':
             setting_encode = server_setting['encode']['default']
@@ -229,14 +231,14 @@ async def wiki_read(request, name):
     data = await data.fetchall()
 
     if data:    
-        return jinja.render("index.html", request,
+        return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = await namumark(data[0][0]),
             title = name,
             sub = 0,
             menu = [['edit/' + name, '편집'], ['discuss/' + name, '토론'], ['backlink/' + name, '역링크'], ['history/' + name, '역사'], ['acl/' + name, 'ACL']]
         )
     else:
-        return jinja.render("index.html", request, 
+        return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = "해당 문서를 찾을 수 없습니다.", 
             title = name,
             sub = 0,
@@ -278,7 +280,7 @@ async def wiki_edit(request, name):
             await history_add(name, data, await date_time(), '0', send, '0')
             return response.redirect("/w/" + name)
             
-    return jinja.render("index.html", request,
+    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = '''
                 <form method="post">
                     <textarea rows="25" class="wiki_textarea" name="wiki_textarea_edit_1">''' + html.escape(re.sub('<br>', '\n', data)) + '''</textarea>
@@ -306,7 +308,7 @@ async def wiki_history(request, name):
         if data_get:
             data += '<li>' + data_history[2] + ' ' + data_history[3] + '</li>'
 
-    return jinja.render("index.html", request,
+    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = data,
             title = name,
             sub = '역사',
@@ -329,7 +331,7 @@ async def wiki_delete(request, name):
             return response.redirect("/w/" + name)
             
     if data_get:
-        return jinja.render("index.html", request,
+        return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = '''
                 <form method="post">
                     <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_delete_1">
@@ -363,7 +365,7 @@ async def wiki_move(request, name):
             return response.redirect("/w/" + change_name)
             
     if data_get:
-        return jinja.render("index.html", request,
+        return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = '''
                 <form method="post">
                     <input type="text" value="''' + name + '''" class="wiki_textbox" name="wiki_textbox_move_1">
@@ -399,7 +401,7 @@ async def wiki_revert(request, name):
         return response.redirect("/w/" + name)
 
     if data_get:
-        return jinja.render("index.html", request,
+        return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = '''
                 <form method="post">
                     <textarea rows="25" class="wiki_textarea" name="wiki_textarea_revert_1" readonly>''' + data_get + '''</textarea>
@@ -444,7 +446,7 @@ async def wiki_signup(request):
         await db.commit() # 보안을 위해 비밀번호 인코딩 시 추가로 넣을 원하는 문자 선택 가능하도록 추후 구현.
         return response.redirect("/member/login")
 
-    return jinja.render("index.html", request,
+    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
         data = '''
             <form method="post">
                 <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_textbox_signup_1">
@@ -463,7 +465,7 @@ async def wiki_login(request):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
-    return jinja.render("index.html", request,
+    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
         data = '''
             <form method="post">
                 <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_textbox_login_1">

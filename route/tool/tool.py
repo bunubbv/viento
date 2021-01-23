@@ -26,9 +26,35 @@ async def user_link(name):
 async def namespace_check(data):
     return 0
 
-async def wiki_setting():
+async def wiki_set(data):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    data_footer = await db.execute("select data from wiki_set where name = 'license'")
+    footer = await data_footer.fetchall()
+
+    data_wiki = await db.execute("select data from wiki_set where name = 'name'")
+    wiki = await data_wiki.fetchall()
+
+    data_edit = await db.execute("select date from doc_his where title = ? order by date desc", [data])
+    date = await data_edit.fetchall()
+
+    if footer:
+        footer = footer[0][0]
+    else:
+        footer = 'ARR'
+    
+    if wiki:
+        wiki = wiki[0][0]
+    else:
+        wiki = 'Wiki'
+
+    if date:
+        date = date[0][0]
+    else:
+        date = 0
+
+    return footer, wiki, date
 
 async def user_check():
     return 0
@@ -74,11 +100,8 @@ async def password_encode(data):
         #TODO : Need slow password hash algorithm
         return CreateAuth('username-fixed', data)
 
-
-
-async def password_check(data):
+async def password_check(data, name):
     return 0
-
 
 def _hashpass(username: str, password: str, salt: str):
     hashsalt = (salt + username).encode('utf-8')
@@ -89,14 +112,12 @@ def _hashpass(username: str, password: str, salt: str):
     #print(curhash)
     return curhash[2:-1]
 
-
 def CreateAuth(username: str, password: str):
     #min: 16+
     SALT_LEN=16
     salt = secrets.token_hex(SALT_LEN)
     curhash = _hashpass(username,password,salt)
     return str(salt+'$'+curhash)
-
 
 def VerifyAuth(username:str,password:str,authstr:str):
     salt = authstr.split('$')[0]

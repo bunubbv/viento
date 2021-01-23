@@ -11,7 +11,7 @@
 			<div id="skin_nav">
 				<div class="skin_container">
 					<li class="skin_nav_li">
-						<a href="/">logo</a>
+						<a href="/">{{ wiki_set[1] }}</a>
 					</li>
 					<li class="skin_nav_li">
 						<a href="/recent/changes">최근 변경</a>
@@ -26,8 +26,19 @@
 			</div>
 			<div id="skin_top">
 				<div class="skin_container">
-					<div class="skin_title">{{ title }} {% if sub != 0 %}<span id="sub">({{ sub }})</span>{% endif %}</div>
-					<div class="skin_date"> date 에 마지막으로 편집되었습니다. </div>
+					<div class="skin_title">
+						{{ title }}
+						{% if sub != 0 %}
+							<span id="sub">({{ sub }})</span>
+						{% endif %}
+					</div>
+					<div class="skin_date">
+						{% if wiki_set[2] != 0 %}
+							{{ wiki_set[2] }}에 마지막으로 편집되었습니다.
+						{% else %}
+							해당 문서가 존재하지 않습니다. 새 문서를 만들어보세요.
+						{% endif %}
+					</div>
 				</div>
 			</div>
 			<div id="skin_middle">
@@ -46,8 +57,8 @@
 			</div>
 			<div id="skin_bottom">
 				<div class="skin_container">
-					<div class="skin_footer">footer</div>
-					<div class="skin_footer"><a href="https://github.com/BadaWikiDev/VientoEngine">Powered By VientoEngine</a>, Momento</div>
+					<div class="skin_footer"> {{ wiki_set[0] }}</div>
+					<div class="skin_footer"><a href="https://github.com/BadaWikiDev/VientoEngine">Powered by VientoEngine</a></div>
 				</div>
 			</div>
 		</div>
