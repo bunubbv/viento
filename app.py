@@ -27,6 +27,8 @@ print('build_count : ' + build_count)
 print('renew_count : ' + renew_count)
 print('')
 
+## 카멜 표기법으로 변경 필요, 오픈나무는 별도의 툴을 통한 호환만 지원하며 구조를 완전히 다르게 변경. (alpha)
+
 for route_file in os.listdir("route"):
     py_file = re.search(r"(.+)\.py$", route_file)
     if py_file:
@@ -101,7 +103,7 @@ async def run():
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
     db_create = {}
-    db_create['table'] = ['doc', 'doc_cac', 'doc_his', 'rec_dis', 'rec_ban', 'rec_log', 'mbr', 'mbr_set', 'mbr_log', 'ban', 'dis', 'acl', 'backlink', 'wiki_set', 'list_per', 'list_fil', 'html_fil', 'list_alarm', 'list_watch', 'list_inter']
+    db_create['table'] = ['doc', 'doc_cac', 'doc_his', 'rec_dis', 'rec_ban', 'rec_log', 'mbr', 'mbr_set', 'mbr_log', 'ban', 'dis', 'dis_log', 'acl', 'backlink', 'wiki_set', 'list_per', 'list_fil', 'html_fil', 'list_alarm', 'list_watch', 'list_inter']
     
     for i in db_create['table']:
         try:
@@ -135,7 +137,8 @@ async def run():
         db_create['mbr_set'] = ['name', 'id', 'data']
         db_create['mbr_log'] = ['name', 'ip', 'ua', 'today', 'sub']
         db_create['ban'] = ['block', 'end', 'why', 'band', 'login']
-        db_create['dis'] = ['id', 'title', 'sub', 'data', 'date', 'ip', 'block', 'top', 'code']
+        db_create['dis'] = ['doc', 'title', 'id', 'state', 'date', 'agree']
+        db_create['dis_log'] = ['id', 'data', 'date', 'ip', 'block', 'top', 'code']
         db_create['acl'] = ['title', 'decu', 'dis', 'view', 'why']
         db_create['backlink'] = ['title', 'link', 'type']
         db_create['wiki_set'] = ['name', 'data', 'coverage']
@@ -303,10 +306,9 @@ async def wiki_history(request, name):
     data_get = await data_get.fetchall()
 
     # if request.method == 'POST': 비교 기능 등
-
-    for data_history in data_get: # 비동기 아님. 추후 교체 필요.
-        if data_get:
-            data += '<li>' + data_history[2] + ' ' + data_history[3] + '</li>'
+        
+    if data_get:
+        data += '<li>' + data_get[0][2] + ' ' + data_get[0][3] + '</li>'
 
     return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = data,
@@ -453,8 +455,8 @@ async def wiki_signup(request):
         data = '''
             <form method="post">
                 <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_textbox_signup_1">
-                <input type="text" placeholder="비밀번호" class="wiki_textbox" name="wiki_textbox_signup_2">
-                <input type="text" placeholder="비밀번호 확인" class="wiki_textbox" name="wiki_textbox_signup_3">
+                <input type="password" placeholder="비밀번호" class="wiki_textbox" name="wiki_textbox_signup_2">
+                <input type="password" placeholder="비밀번호 확인" class="wiki_textbox" name="wiki_textbox_signup_3">
                 <button type="submit" class="wiki_button" name="wiki_button_signup_1">확인</button>
             </form>
         ''',
@@ -478,6 +480,7 @@ async def wiki_login(request):
         wiki_pass_check = await VerifyAuth(wiki_id, wiki_password, 0)
         if wiki_pass_check == 1:
             request.ctx.session['id'] = 1
+            return response.redirect("/")
         else:
             return response.redirect('/error/') # 오류 페이지 구현 필요
 
@@ -485,7 +488,7 @@ async def wiki_login(request):
         data = '''
             <form method="post">
                 <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_textbox_login_1">
-                <input type="text" placeholder="비밀번호" class="wiki_textbox" name="wiki_textbox_login_2">
+                <input type="password" placeholder="비밀번호" class="wiki_textbox" name="wiki_textbox_login_2">
                 <button type="submit" class="wiki_button" name="wiki_button_login_1">확인</button>
             </form>
         ''',
@@ -501,6 +504,103 @@ async def wiki_logout(request):
 
     request.ctx.session['id'] = 0
     return response.redirect("/")
+
+@app.route("/discuss/<name:string>")
+async def wiki_discuss(request, name):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    data = ''
+    discuss_get = db.execute("select title, id, state, date, agree from dis where doc = ?", [name])
+    discuss_get = discuss_get.fetchall()
+
+    for discuss in discuss_get:
+        data += '<li>' + discuss[0] + discuss[1] + discuss[2] + discuss[3] + discuss[4] + '</li>'
+
+    if request.method == "POST":
+        discuss_title = request.form.get('wiki_textbox_discuss_1', '')
+        discuss_data = request.form.get('wiki_textarea_discuss_1', '')
+        
+        title_get = db.execute("select title from dis where title = ?", [discuss_title])
+        title_get = title_get.fetchall()
+
+        if discuss_title or discuss_data == '':
+            return response.redirect("/error/") # 오류 구현 필요
+
+        if title_get:
+            return response.redirect("/error/") # 오류 구현 필요
+
+        
+
+    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+        data = data + '''
+            <form method="post">
+                <input type="text" class="wiki_textbox" name="wiki_textbox_discuss_1">
+                <textarea class="wiki_textarea" name="wiki_textarea_discuss_1"></textarea>
+                <button type="submit" class="wiki_button" name="wiki_button_discuss_1">
+            </form>
+        ''',
+        title = name,
+        sub = '토론',
+        menu = [['w/' + name, '문서']]
+    )
+
+## Blind = ?blind=num
+## delete = ?delete=1
+## change_name = textbox
+## change_doc = textbox
+
+@app.route("/discuss/<name:string>/<num:int>")
+async def wiki_discuss_thread(request, name, num):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    
+    data = ''
+    thread_list = await db.execute("select data, date, ip, block, top, code from dis_log where id = ?", [num])
+    thread_list = await thread_list.fetchall()
+
+    if not thread_list:
+        return response.redirect("/error/") # 오류 구현 필요
+
+    for thread_data in thread_list:
+        if thread_data[3] != '1':
+            data += '''
+                <div class="wiki_thread_table">
+                    <div class="wiki_thread_table_top">
+                        ''' + thread_data[5] + ''' ''' + thread_data[2] + ''' ''' + thread_data[1] + '''
+                    </div>
+                    <div class="wiki_thread_table_bottom">
+                        ''' + thread_data[0] + '''
+                </div>
+            '''
+        else:
+            data += '''
+                <div class="wiki_thread_table">
+                    <div class="wiki_thread_table_top">
+                        ''' + thread_data[5] + ''' ''' + thread_data[2] + ''' ''' + thread_data[1] + '''
+                    </div>
+                    <div class="wiki_thread_table_bottom">
+                        블라인드된 스레드입니다.
+                </div>
+            '''
+
+    if request.method == "POST":
+        return 0
+
+    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+        data = data + '''
+            <form method="post">
+                <textarea class="wiki_textarea" name="wiki_textarea_thread_1"></textarea>
+                <button type="submit" class="wiki_button" name="wiki_button_thread_1">
+            </form>
+        ''',
+        title = name,
+        sub = '토론',
+        menu = [['w/' + name, '문서']]
+    )
+
+## API
+## 문서 내용, 문서 RAW, 토론 내용, 최근 변경, 최근 토론, 이미지
 
 if __name__ == "__main__":
   app.run(debug=False, access_log=False, host=setting_data['host'], port=setting_data['port'])
