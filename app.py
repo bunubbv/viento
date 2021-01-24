@@ -511,8 +511,8 @@ async def wiki_discuss(request, name):
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data = ''
-    discuss_get = db.execute("select title, id, state, date, agree from dis where doc = ?", [name])
-    discuss_get = discuss_get.fetchall()
+    discuss_get = await db.execute("select title, id, state, date, agree from dis where doc = ?", [name])
+    discuss_get = await discuss_get.fetchall()
 
     for discuss in discuss_get:
         data += '<li>' + discuss[0] + discuss[1] + discuss[2] + discuss[3] + discuss[4] + '</li>'
