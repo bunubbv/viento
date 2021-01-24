@@ -521,8 +521,8 @@ async def wiki_discuss(request, name):
         discuss_title = request.form.get('wiki_textbox_discuss_1', '')
         discuss_data = request.form.get('wiki_textarea_discuss_1', '')
         
-        title_get = db.execute("select title from dis where title = ?", [discuss_title])
-        title_get = title_get.fetchall()
+        title_get = await db.execute("select title from dis where title = ?", [discuss_title])
+        title_get = await title_get.fetchall()
 
         if discuss_title or discuss_data == '':
             return response.redirect("/error/") # 오류 구현 필요
