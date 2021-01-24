@@ -194,7 +194,7 @@ loop.run_until_complete(run())
     
 app = Sanic(__name__)
 jinja = SanicJinja2(app, pkg_path='skins')
-session = Session()
+session = Session(app)
 app.static('/skins', './skins')
     
 ## 주소 설정
@@ -421,6 +421,9 @@ async def wiki_signup(request):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
+    if request.ctx.session.get('id') == 1:
+        return response.redirect('/')
+
     if request.method == 'POST':
         signup_id = request.form.get('wiki_textbox_signup_1', '')
         signup_password_1 = request.form.get('wiki_textbox_signup_2', '')
@@ -441,12 +444,12 @@ async def wiki_signup(request):
         if id_check:
             return response.redirect("/error/")
 
-        encode_password = await password_encode(signup_password_1)
+        encode_password = await password_encode(signup_password_1, signup_id)
         await db.execute("insert into mbr (id, pw, acl, date, email) values (?, ?, ?, ?, ?)", [signup_id, encode_password, 'member', await date_time(), '']) # 추후 권한 기본 설정과 이메일 구현되면 수정 필요, mbr_log 기록 필요.
-        await db.commit() # 보안을 위해 비밀번호 인코딩 시 추가로 넣을 원하는 문자 선택 가능하도록 추후 구현.
+        await db.commit()
         return response.redirect("/member/login")
 
-    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+    return jinja.render("index.html", request, wiki_set = await wiki_set(0),
         data = '''
             <form method="post">
                 <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_textbox_signup_1">
@@ -465,7 +468,20 @@ async def wiki_login(request):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
-    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+    if request.ctx.session.get('id') == 1:
+        return response.redirect('/')
+
+    if request.method == 'POST':
+        wiki_id = request.form.get('wiki_textbox_login_1', '')
+        wiki_password = request.form.get('wiki_textbox_login_2', '')
+
+        wiki_pass_check = await VerifyAuth(wiki_id, wiki_password, 0)
+        if wiki_pass_check == 1:
+            request.ctx.session['id'] = 1
+        else:
+            return response.redirect('/error/') # 오류 페이지 구현 필요
+
+    return jinja.render("index.html", request, wiki_set = await wiki_set(0),
         data = '''
             <form method="post">
                 <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_textbox_login_1">
@@ -480,7 +496,11 @@ async def wiki_login(request):
 
 @app.route("/member/logout", methods=['POST', 'GET'])
 async def wiki_logout(request):
-    return response.redirect("/") # 대문 등 기본적인 설정 완료되면 수정
+    if not request.ctx.session.get('id') or request.ctx.session.get('id') == 0:
+            return response.redirect('/')
+
+    request.ctx.session['id'] = 0
+    return response.redirect("/")
 
 if __name__ == "__main__":
   app.run(debug=False, access_log=False, host=setting_data['host'], port=setting_data['port'])
