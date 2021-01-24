@@ -505,14 +505,14 @@ async def wiki_logout(request):
     request.ctx.session['id'] = 0
     return response.redirect("/")
 
-@app.route("/discuss/<name:string>")
+@app.route("/discuss/<name:string>", methods=['POST', 'GET'])
 async def wiki_discuss(request, name):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data = ''
-    discuss_get = db.execute("select title, id, state, date, agree from dis where doc = ?", [name])
-    discuss_get = discuss_get.fetchall()
+    discuss_get = await db.execute("select title, id, state, date, agree from dis where doc = ?", [name])
+    discuss_get = await discuss_get.fetchall()
 
     for discuss in discuss_get:
         data += '<li>' + discuss[0] + discuss[1] + discuss[2] + discuss[3] + discuss[4] + '</li>'
@@ -521,8 +521,8 @@ async def wiki_discuss(request, name):
         discuss_title = request.form.get('wiki_textbox_discuss_1', '')
         discuss_data = request.form.get('wiki_textarea_discuss_1', '')
         
-        title_get = db.execute("select title from dis where title = ?", [discuss_title])
-        title_get = title_get.fetchall()
+        title_get = await db.execute("select title from dis where title = ?", [discuss_title])
+        title_get = await title_get.fetchall()
 
         if discuss_title or discuss_data == '':
             return response.redirect("/error/") # 오류 구현 필요
