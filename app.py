@@ -505,7 +505,7 @@ async def wiki_logout(request):
     request.ctx.session['id'] = 0
     return response.redirect("/")
 
-@app.route("/discuss/<name:string>")
+@app.route("/discuss/<name:string>", methods=['POST', 'GET'])
 async def wiki_discuss(request, name):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
