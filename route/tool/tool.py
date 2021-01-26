@@ -7,12 +7,16 @@ import binascii
 
 import aiosqlite
 from sanic_ipware import get_client_ip
+from sanic_session import Session
 
 async def date_time():
     return str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
 
-async def user_name():
-    return str(get_client_ip(request, request_header_order=['Forwarded-For', 'X-Forwarded-For']))
+async def user_name(request):
+    if request.ctx.session or request.ctx.session['id'] != 0:
+        return request.ctx.session['id']
+    else:
+        return str(get_client_ip(request, request_header_order=['Forwarded-For', 'X-Forwarded-For']))
 
 async def user_link(name):
     if re.sub('\.([^.]*)\.([^.]*)$', '.*.*', name):

@@ -4,17 +4,10 @@ html {
 
 body {
     font-family: NanumBarunGothic, sans-serif !important;
-    font-size: 14.5px;
+    font-size: 14.5px!important;
     padding: 0;
     margin: 0;
     height: 100%;
-}
-
-.skin_container {
-    margin-left: auto;
-    margin-right: auto;
-    padding: 18px;
-    width: 900px;
 }
 
 #skin_nav {
@@ -45,7 +38,8 @@ body {
 .skin_title {
     vertical-align: text-bottom;
     margin-top: 190px;
-    margin-top: calc(40vh - 110px);
+    margin-top: calc(40vh - 100px);
+    margin-bottom: -7px;
 }
 
 .skin_date {
@@ -67,10 +61,11 @@ a {
 }
 
 #skin_toolbar {
+    margin-top: 18px;
     margin-bottom: 15px;
     font-size: 16px;
     background: linear-gradient(to right, #00afff, #008dcf);
-    padding: 7px 12px;
+    padding: 5px 12px;
     float: right;
     display: inline-block;
 }
@@ -104,4 +99,21 @@ textarea {
 
 #sub {
     font-size: 40px;
+}
+
+#skin_data {
+    clear: both;
+    word-break: break-all;
+}
+
+.container {
+    max-width: 900px;
+}
+
+.navbar-brand {
+    font-size: 14.5px;
+}
+
+nav {
+    height: 54.5px!important;
 }

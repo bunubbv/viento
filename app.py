@@ -138,7 +138,7 @@ async def run():
         db_create['mbr_log'] = ['name', 'ip', 'ua', 'today', 'sub']
         db_create['ban'] = ['block', 'end', 'why', 'band', 'login']
         db_create['dis'] = ['doc', 'title', 'id', 'state', 'date', 'agree']
-        db_create['dis_log'] = ['id', 'data', 'date', 'ip', 'block', 'top', 'code']
+        db_create['dis_log'] = ['id', 'data', 'date', 'ip', 'block', 'top', 'code', 'doc']
         db_create['acl'] = ['title', 'decu', 'dis', 'view', 'why']
         db_create['backlink'] = ['title', 'link', 'type']
         db_create['wiki_set'] = ['name', 'data', 'coverage']
@@ -307,8 +307,9 @@ async def wiki_history(request, name):
 
     # if request.method == 'POST': 비교 기능 등
         
-    if data_get:
-        data += '<li>' + data_get[0][2] + ' ' + data_get[0][3] + '</li>'
+    for history_data in data_get:
+        if data_get:
+            data += '<li>' + history_data[2] + ' ' + history_data[3] + '</li>'
 
     return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = data,
@@ -479,7 +480,7 @@ async def wiki_login(request):
 
         wiki_pass_check = await VerifyAuth(wiki_id, wiki_password, 0)
         if wiki_pass_check == 1:
-            request.ctx.session['id'] = 1
+            request.ctx.session['id'] = wiki_id
             return response.redirect("/")
         else:
             return response.redirect('/error/') # 오류 페이지 구현 필요
@@ -520,24 +521,30 @@ async def wiki_discuss(request, name):
     if request.method == "POST":
         discuss_title = request.form.get('wiki_textbox_discuss_1', '')
         discuss_data = request.form.get('wiki_textarea_discuss_1', '')
-        
-        title_get = await db.execute("select title from dis where title = ?", [discuss_title])
-        title_get = await title_get.fetchall()
 
-        if discuss_title or discuss_data == '':
+        if discuss_title == '' or discuss_data == '':
             return response.redirect("/error/") # 오류 구현 필요
 
-        if title_get:
-            return response.redirect("/error/") # 오류 구현 필요
+        discuss_number = await db.execute("select id from dis where doc = ? order by id desc", [name])
+        discuss_number = await discuss_number.fetchall()
 
-        
+        if not discuss_number:
+            discuss_id = '1'
+        else:
+            discuss_id = str(int(discuss_number[0][0]) + 1)
+
+        await db.execute("insert into dis (doc, title, id, state, date, agree) values (?, ?, ?, 'normal', ?, '0')", [name, discuss_title, discuss_id, await date_time()])
+        await db.execute("insert into dis_log (id, data, date, ip, block, code, doc) values (?, ?, ?, ?, '0', ?, ?)", ['1', discuss_data, await date_time(), '0', discuss_id, name])
+        await db.commit()
+
+        return response.redirect("/discuss/" + name + '/' + discuss_id)
 
     return jinja.render("index.html", request, wiki_set = await wiki_set(name),
         data = data + '''
             <form method="post">
-                <input type="text" class="wiki_textbox" name="wiki_textbox_discuss_1">
-                <textarea class="wiki_textarea" name="wiki_textarea_discuss_1"></textarea>
-                <button type="submit" class="wiki_button" name="wiki_button_discuss_1">
+                <input type="text" placeholder="토론 제목" class="wiki_textbox" name="wiki_textbox_discuss_1">
+                <textarea placeholder="토론 내용" class="wiki_textarea" name="wiki_textarea_discuss_1"></textarea>
+                <button type="submit" class="wiki_button" name="wiki_button_discuss_1">확인</button>
             </form>
         ''',
         title = name,
@@ -545,18 +552,13 @@ async def wiki_discuss(request, name):
         menu = [['w/' + name, '문서']]
     )
 
-## Blind = ?blind=num
-## delete = ?delete=1
-## change_name = textbox
-## change_doc = textbox
-
-@app.route("/discuss/<name:string>/<num:int>")
+@app.route("/discuss/<name:string>/<num:int>", methods=['POST', 'GET'])
 async def wiki_discuss_thread(request, name, num):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
     
     data = ''
-    thread_list = await db.execute("select data, date, ip, block, top, code from dis_log where id = ?", [num])
+    thread_list = await db.execute("select id, data, date, ip, block, top from dis_log where code = ? and doc = ?", [num, name])
     thread_list = await thread_list.fetchall()
 
     if not thread_list:
@@ -567,17 +569,17 @@ async def wiki_discuss_thread(request, name, num):
             data += '''
                 <div class="wiki_thread_table">
                     <div class="wiki_thread_table_top">
-                        ''' + thread_data[5] + ''' ''' + thread_data[2] + ''' ''' + thread_data[1] + '''
+                        ''' + thread_data[0] + ''' ''' + thread_data[3] + ''' ''' + thread_data[4] + '''
                     </div>
                     <div class="wiki_thread_table_bottom">
-                        ''' + thread_data[0] + '''
+                        ''' + thread_data[1] + '''
                 </div>
             '''
         else:
             data += '''
                 <div class="wiki_thread_table">
                     <div class="wiki_thread_table_top">
-                        ''' + thread_data[5] + ''' ''' + thread_data[2] + ''' ''' + thread_data[1] + '''
+                        ''' + thread_data[0] + ''' ''' + thread_data[3] + ''' ''' + thread_data[2] + '''
                     </div>
                     <div class="wiki_thread_table_bottom">
                         블라인드된 스레드입니다.
@@ -592,6 +594,27 @@ async def wiki_discuss_thread(request, name, num):
             <form method="post">
                 <textarea class="wiki_textarea" name="wiki_textarea_thread_1"></textarea>
                 <button type="submit" class="wiki_button" name="wiki_button_thread_1">
+            </form>
+        ''',
+        title = name,
+        sub = '토론',
+        menu = [['w/' + name, '문서']]
+    )
+
+@app.route("/discuss/<name:string>/<num:int>/setting", methods=['POST', 'GET'])
+async def wiki_discuss_thread_setting(request, name, int):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    discuss_title = db.execute("select title from dis where doc = ?", [name])
+    discuss_title = discuss_title.fetchall()
+
+    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+        data = '''
+            <form method="post">
+                <input class="wiki_textbox" name="wiki_textbox_thread_setting_1"></textarea>
+                <input class="wiki_textbox" name="wiki_textbox_thread_setting_1"></textarea>
+                <button type="submit" class="wiki_button" name="wiki_button_thread_setting_1">
             </form>
         ''',
         title = name,
