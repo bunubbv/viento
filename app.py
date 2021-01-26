@@ -622,6 +622,46 @@ async def wiki_discuss_thread_setting(request, name, int):
         menu = [['w/' + name, '문서']]
     )
 
+@app.route("/recent/changes")
+async def wiki_recent_changes(request):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    data = ''
+    data_get = await db.execute("select id, title, date, ip, send, leng from doc_his order by id + 0 desc limit 30")
+    data_get = await data_get.fetchall()
+        
+    for history_data in data_get:
+        if data_get:
+            data += '<li>' + history_data[2] + ' ' + history_data[3] + '</li>'
+
+    return jinja.render("index.html", request, wiki_set = await wiki_set(0),
+        data = data,
+        title = '최근 변경',
+        sub = 0,
+        menu = 0
+    )
+
+@app.route("/recent/discuss")
+async def wiki_recent_discuss(request):
+    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    data = ''
+    data_get = await db.execute("select doc, title, id, date from dis where state = ? order by date desc limit 30", ['normal'])
+    data_get = await data_get.fetchall()
+        
+    for discuss_data in data_get:
+        if data_get:
+            data += '<li>' + discuss_data[1] + ' ' + discuss_data[3] + '</li>'
+
+    return jinja.render("index.html", request, wiki_set = await wiki_set(0),
+        data = data,
+        title = '최근 토론',
+        sub = 0,
+        menu = 0
+    )
+
 ## API
 ## 문서 내용, 문서 RAW, 토론 내용, 최근 변경, 최근 토론, 이미지
 
