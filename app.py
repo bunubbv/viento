@@ -273,14 +273,14 @@ async def wiki_edit(request, name):
                 data = re.sub('\n', '<br>', data)
                 await db.execute("update doc set data = ? where title = ?", [data, name])
                 await db.commit()
-                await history_add(name, data, await date_time(), '0', send, '0')
+                await history_add(name, data, await date_time(), await user_name(request), send, '0')
                 return response.redirect("/w/" + name)
                 
         else:
             data = re.sub('\n', '<br>', data)
             await db.execute("insert into doc (title, data) values (?, ?)", [name, data])
             await db.commit()
-            await history_add(name, data, await date_time(), '0', send, '0')
+            await history_add(name, data, await date_time(), await user_name(request), send, '0')
             return response.redirect("/w/" + name)
             
     return jinja.render("index.html", request, wiki_set = await wiki_set(name),
@@ -330,7 +330,7 @@ async def wiki_delete(request, name):
             send = request.form.get('wiki_textbox_delete_1', '')
             await db.execute("delete from doc where title = ?", [name])
             await db.commit()
-            await history_add(name, '', await date_time(), '0', send, '0')
+            await history_add(name, '', await date_time(), await user_name(request), send, '0')
             return response.redirect("/w/" + name)
             
     if data_get:
@@ -364,7 +364,7 @@ async def wiki_move(request, name):
             await db.execute("update doc set title = ? where title = ?", [change_name, name])
             await db.execute("update doc_his set title = ? where title = ?", [change_name, name])
             await db.commit()
-            await history_add(change_name, '', await date_time(), '0', send, '0')
+            await history_add(change_name, '', await date_time(), await user_name(request), send, '0')
             return response.redirect("/w/" + change_name)
             
     if data_get:
@@ -400,7 +400,7 @@ async def wiki_revert(request, name):
         data_get = re.sub('\n', '<br>', data_get)
         await db.execute("update doc set data = ? where title = ?", [data_get, name])
         await db.commit()
-        await history_add(name, data_get, await date_time(), '0', send, '0')
+        await history_add(name, data_get, await date_time(), await user_name(request), send, '0')
         return response.redirect("/w/" + name)
 
     if data_get:
@@ -534,7 +534,7 @@ async def wiki_discuss(request, name):
             discuss_id = str(int(discuss_number[0][0]) + 1)
 
         await db.execute("insert into dis (doc, title, id, state, date, agree) values (?, ?, ?, 'normal', ?, '0')", [name, discuss_title, discuss_id, await date_time()])
-        await db.execute("insert into dis_log (id, data, date, ip, block, code, doc) values (?, ?, ?, ?, '0', ?, ?)", ['1', discuss_data, await date_time(), '0', discuss_id, name])
+        await db.execute("insert into dis_log (id, data, date, ip, block, code, doc) values (?, ?, ?, ?, '0', ?, ?)", ['1', discuss_data, await date_time(), await user_name(request), discuss_id, name])
         await db.commit()
 
         return response.redirect("/discuss/" + name + '/' + discuss_id)

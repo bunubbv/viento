@@ -113,7 +113,7 @@ nav {
 }
 
 #skin_middle {
-    min-height: calc( 100vh - 470px );
+    min-height: calc( 60vh - 180px );
 }
 
 #skin_data {

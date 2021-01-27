@@ -13,10 +13,12 @@ async def date_time():
     return str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
 
 async def user_name(request):
-    if request.ctx.session or request.ctx.session['id'] != 0:
-        return request.ctx.session['id']
+    if not request.ctx.session.get('id)') or request.ctx.session.get('id') == 0:
+        ip, routable = get_client_ip(request)
+        if ip is not None:
+            return ip
     else:
-        return str(get_client_ip(request, request_header_order=['Forwarded-For', 'X-Forwarded-For']))
+        return request.ctx.session['id']
 
 async def user_link(name):
     if re.sub('\.([^.]*)\.([^.]*)$', '.*.*', name):
