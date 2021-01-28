@@ -262,8 +262,8 @@ async def wiki_edit(request, name):
         data = data_get[0][0]
 
     if request.method == 'POST':
-        data = request.form.get('wiki_textarea_edit_1', '')
-        send = request.form.get('wiki_textbox_edit_1', '')
+        data = request.form.get('wiki_edit_textarea_1', '')
+        send = request.form.get('wiki_edit_textbox_1', '')
         
         if data_get:
             if data_get[0][0] == data:
@@ -286,9 +286,9 @@ async def wiki_edit(request, name):
     return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = '''
                 <form method="post">
-                    <textarea rows="25" class="wiki_textarea" name="wiki_textarea_edit_1">''' + html.escape(re.sub('<br>', '\n', data)) + '''</textarea>
-                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_edit_1">
-                    <button type="submit" class="wiki_button" name="wiki_button_edit_1">저장</button>
+                    <textarea rows="25" class="wiki_textarea" name="wiki_edit_textarea_1">''' + html.escape(re.sub('<br>', '\n', data)) + '''</textarea>
+                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_edit_textbox_1">
+                    <button type="submit" class="wiki_button" name="wiki_edit_button_1">저장</button>
                 </form>
             ''',
             title = name,
@@ -327,7 +327,7 @@ async def wiki_delete(request, name):
     data_get = await data_get.fetchall()
 
     if request.method == 'POST':
-            send = request.form.get('wiki_textbox_delete_1', '')
+            send = request.form.get('wiki_delete_textbox_1', '')
             await db.execute("delete from doc where title = ?", [name])
             await db.commit()
             await history_add(name, '', await date_time(), await user_name(request), send, '0')
@@ -337,8 +337,8 @@ async def wiki_delete(request, name):
         return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = '''
                 <form method="post">
-                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_delete_1">
-                    <button type="submit" class="wiki_button" name="wiki_button_delete_1">확인</button>
+                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_delete_textbox_1">
+                    <button type="submit" class="wiki_button" name="wiki_delete_button_1">확인</button>
                 </form>
             ''',
             title = name,
@@ -359,8 +359,8 @@ async def wiki_move(request, name):
     data_get = await data_get.fetchall()
 
     if request.method == 'POST':
-            change_name = request.form.get('wiki_textbox_move_1', '')
-            send = request.form.get('wiki_textbox_move_2', '')
+            change_name = request.form.get('wiki_move_textbox_1', '')
+            send = request.form.get('wiki_move_textbox_2', '')
             await db.execute("update doc set title = ? where title = ?", [change_name, name])
             await db.execute("update doc_his set title = ? where title = ?", [change_name, name])
             await db.commit()
@@ -371,9 +371,9 @@ async def wiki_move(request, name):
         return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = '''
                 <form method="post">
-                    <input type="text" value="''' + name + '''" class="wiki_textbox" name="wiki_textbox_move_1">
-                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_move_2">
-                    <button type="submit" class="wiki_button" name="wiki_button_move_1">확인</button>
+                    <input type="text" value="''' + name + '''" class="wiki_textbox" name="wiki_move_textbox_1">
+                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_move_textbox_2">
+                    <button type="submit" class="wiki_button" name="wiki_move_button_1">확인</button>
                 </form>
             ''',
             title = name,
@@ -396,7 +396,7 @@ async def wiki_revert(request, name):
     data_get = data_get[0][0]
 
     if request.method == 'POST':
-        send = request.form.get('wiki_textbox_revert_1', '')
+        send = request.form.get('wiki_revert_textbox__1', '')
         data_get = re.sub('\n', '<br>', data_get)
         await db.execute("update doc set data = ? where title = ?", [data_get, name])
         await db.commit()
@@ -407,9 +407,9 @@ async def wiki_revert(request, name):
         return jinja.render("index.html", request, wiki_set = await wiki_set(name),
             data = '''
                 <form method="post">
-                    <textarea rows="25" class="wiki_textarea" name="wiki_textarea_revert_1" readonly>''' + data_get + '''</textarea>
-                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_textbox_revert_2">
-                    <button type="submit" class="wiki_button" name="wiki_button_revert_1">확인</button>
+                    <textarea rows="25" class="wiki_textarea" name="wiki_revert_textarea_1" readonly>''' + data_get + '''</textarea>
+                    <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_revert_textbox_2">
+                    <button type="submit" class="wiki_button" name="wiki_revert_button_1">확인</button>
                 </form>
             ''',
             title = name,
@@ -429,8 +429,8 @@ async def wiki_signup(request):
 
     if request.method == 'POST':
         signup_id = request.form.get('wiki_textbox_signup_1', '')
-        signup_password_1 = request.form.get('wiki_textbox_signup_2', '')
-        signup_password_2 = request.form.get('wiki_textbox_signup_2', '')
+        signup_password_1 = request.form.get('wiki_signup_textbox_2', '')
+        signup_password_2 = request.form.get('wiki_signup_textbox_3', '')
 
         if signup_password_1 != signup_password_2:
             return response.redirect("/error/") # 오류 페이지 구현 필요
@@ -455,10 +455,10 @@ async def wiki_signup(request):
     return jinja.render("index.html", request, wiki_set = await wiki_set(0),
         data = '''
             <form method="post">
-                <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_textbox_signup_1">
-                <input type="password" placeholder="비밀번호" class="wiki_textbox" name="wiki_textbox_signup_2">
-                <input type="password" placeholder="비밀번호 확인" class="wiki_textbox" name="wiki_textbox_signup_3">
-                <button type="submit" class="wiki_button" name="wiki_button_signup_1">확인</button>
+                <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_signup_textbox_1">
+                <input type="password" placeholder="비밀번호" class="wiki_textbox" name="wiki_signup_textbox_2">
+                <input type="password" placeholder="비밀번호 확인" class="wiki_textbox" name="wiki_signup_textbox_3">
+                <button type="submit" class="wiki_button" name="wiki_signup_button_1">확인</button>
             </form>
         ''',
         title = '계정 만들기',
@@ -475,8 +475,8 @@ async def wiki_login(request):
         return response.redirect('/')
 
     if request.method == 'POST':
-        wiki_id = request.form.get('wiki_textbox_login_1', '')
-        wiki_password = request.form.get('wiki_textbox_login_2', '')
+        wiki_id = request.form.get('wiki_login_textbox_1', '')
+        wiki_password = request.form.get('wiki_login_textbox_2', '')
 
         wiki_pass_check = await VerifyAuth(wiki_id, wiki_password, 0)
         if wiki_pass_check == 1:
@@ -488,9 +488,9 @@ async def wiki_login(request):
     return jinja.render("index.html", request, wiki_set = await wiki_set(0),
         data = '''
             <form method="post">
-                <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_textbox_login_1">
-                <input type="password" placeholder="비밀번호" class="wiki_textbox" name="wiki_textbox_login_2">
-                <button type="submit" class="wiki_button" name="wiki_button_login_1">확인</button>
+                <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_login_textbox_1">
+                <input type="password" placeholder="비밀번호" class="wiki_textbox" name="wiki_login_textbox_2">
+                <button type="submit" class="wiki_button" name="wiki_login_button_1">확인</button>
             </form>
         ''',
         title = '로그인',
@@ -519,8 +519,8 @@ async def wiki_discuss(request, name):
         data += '<li>' + discuss[0] + discuss[1] + discuss[2] + discuss[3] + discuss[4] + '</li>'
 
     if request.method == "POST":
-        discuss_title = request.form.get('wiki_textbox_discuss_1', '')
-        discuss_data = request.form.get('wiki_textarea_discuss_1', '')
+        discuss_title = request.form.get('wiki_discuss_textbox_1', '')
+        discuss_data = request.form.get('wiki_discuss_textarea_1', '')
 
         if discuss_title == '' or discuss_data == '':
             return response.redirect("/error/") # 오류 구현 필요
@@ -542,9 +542,9 @@ async def wiki_discuss(request, name):
     return jinja.render("index.html", request, wiki_set = await wiki_set(name),
         data = data + '''
             <form method="post">
-                <input type="text" placeholder="토론 제목" class="wiki_textbox" name="wiki_textbox_discuss_1">
-                <textarea placeholder="토론 내용" class="wiki_textarea" name="wiki_textarea_discuss_1"></textarea>
-                <button type="submit" class="wiki_button" name="wiki_button_discuss_1">확인</button>
+                <input type="text" placeholder="토론 제목" class="wiki_textbox" name="wiki_discuss_textbox_1">
+                <textarea placeholder="토론 내용" class="wiki_textarea" name="wiki_discuss_textarea_1"></textarea>
+                <button type="submit" class="wiki_button" name="wiki_discuss_button_1">확인</button>
             </form>
         ''',
         title = name,
@@ -592,8 +592,8 @@ async def wiki_discuss_thread(request, name, num):
     return jinja.render("index.html", request, wiki_set = await wiki_set(name),
         data = data + '''
             <form method="post">
-                <textarea class="wiki_textarea" name="wiki_textarea_thread_1"></textarea>
-                <button type="submit" class="wiki_button" name="wiki_button_thread_1">
+                <textarea class="wiki_textarea" name="wiki_thread_textarea_1"></textarea>
+                <button type="submit" class="wiki_button" name="wiki_thread_button_1">
             </form>
         ''',
         title = name,
@@ -612,9 +612,9 @@ async def wiki_discuss_thread_setting(request, name, int):
     return jinja.render("index.html", request, wiki_set = await wiki_set(name),
         data = '''
             <form method="post">
-                <input class="wiki_textbox" name="wiki_textbox_thread_setting_1"></textarea>
-                <input class="wiki_textbox" name="wiki_textbox_thread_setting_1"></textarea>
-                <button type="submit" class="wiki_button" name="wiki_button_thread_setting_1">
+                <input class="wiki_textbox" name="wiki_thread_textbox_setting_1"></textarea>
+                <input class="wiki_textbox" name="wiki_thread_textbox_setting_1"></textarea>
+                <button type="submit" class="wiki_button" name="wiki_thread_button_setting_1">
             </form>
         ''',
         title = name,

@@ -14,9 +14,7 @@ async def date_time():
 
 async def user_name(request):
     if not request.ctx.session.get('id)') or request.ctx.session.get('id') == 0:
-        ip, routable = get_client_ip(request)
-        if ip is not None:
-            return ip
+        ip = get_client_ip(request)
     else:
         return request.ctx.session['id']
 
