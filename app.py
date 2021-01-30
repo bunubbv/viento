@@ -3,6 +3,7 @@ from sanic.request import RequestParameters
 from sanic_jinja2 import SanicJinja2
 from sanic_session import Session, AIORedisSessionInterface
 import aiosqlite
+import aiofiles
 import aioredis
 import asyncio
 import json
@@ -13,7 +14,9 @@ import re
 from route.tool.tool import *
 from route.mark.namumark import *
 
+setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
 version_load = json.loads(open('data/version.json', encoding='utf-8').read())
+
 engine_version = version_load["main"]["engine_version"]
 markup_version = version_load["main"]["markup_version"]
 build_count = version_load["main"]["build_count"]
@@ -61,7 +64,9 @@ async def run():
     }
 
     try:
-        setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
+        async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+            setting_data = json.loads(await f.read())
+
         if not 'db_type' and 'db_name' and 'host' and 'port' in setting_data:
             try:
                 os.remove('data/setting.json')
@@ -97,11 +102,13 @@ async def run():
         if setting_json[3] == '':
             setting_json[3] = server_setting['port']['default']
 
-        with open('data/setting.json', 'w', encoding = 'utf8') as f:
-            f.write('{ "db_name" : "' + setting_json[1] + '", "db_type" : "' + setting_json[0] + '", "host" : "' + setting_json[2] + '", "port" : "' + setting_json[3] + '" }')
+        async with aiofiles.open('data/setting.json', 'w', encoding = 'utf8') as f:
+            await f.write('{ "db_name" : "' + setting_json[1] + '", "db_type" : "' + setting_json[0] + '", "host" : "' + setting_json[2] + '", "port" : "' + setting_json[3] + '" }')
 
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
     db_create = {}
     db_create['table'] = ['doc', 'doc_cac', 'doc_his', 'rec_dis', 'rec_ban', 'rec_log', 'mbr', 'mbr_set', 'mbr_log', 'ban', 'dis', 'dis_log', 'acl', 'backlink', 'wiki_set', 'list_per', 'list_fil', 'html_fil', 'list_alarm', 'list_watch', 'list_inter']
     
@@ -214,8 +221,9 @@ async def server_init(app, loop):
 
 @app.route('/')
 async def wiki_frontpage(request):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data_get = await db.execute("select data from wiki_set where name = ?", ['frontpage'])
     data_get = await data_get.fetchall()
@@ -227,9 +235,10 @@ async def wiki_frontpage(request):
 
 @app.route("/w/<name:string>")
 async def wiki_read(request, name):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
-        
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
     data = await db.execute("select data from doc where title = ?", [name])
     data = await data.fetchall()
 
@@ -250,8 +259,9 @@ async def wiki_read(request, name):
         
 @app.route("/edit/<name:string>", methods=['POST', 'GET'])
 async def wiki_edit(request, name):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data_get = await db.execute("select data from doc where title = ? ", [name])
     data_get = await data_get.fetchall()
@@ -298,8 +308,9 @@ async def wiki_edit(request, name):
         
 @app.route("/history/<name:string>")
 async def wiki_history(request, name):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
     
     data = ''
     data_get = await db.execute("select id, title, date, ip, send, leng from doc_his where title = ? order by id + 0 desc limit 30", [name])
@@ -320,8 +331,9 @@ async def wiki_history(request, name):
 
 @app.route("/delete/<name:string>", methods=['POST', 'GET'])
 async def wiki_delete(request, name):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data_get = await db.execute("select data from doc where title = ? ", [name])
     data_get = await data_get.fetchall()
@@ -348,12 +360,11 @@ async def wiki_delete(request, name):
     else:
         return response.redirect("/error/") # 오류 페이지 구현 필요
 
-setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-
 @app.route("/move/<name:string>", methods=['POST', 'GET'])
 async def wiki_move(request, name):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data_get = await db.execute("select data from doc where title = ? ", [name])
     data_get = await data_get.fetchall()
@@ -385,8 +396,9 @@ async def wiki_move(request, name):
 
 @app.route("/revert/<name:string>", methods=['POST', 'GET'])
 async def wiki_revert(request, name):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     args = RequestParameters()
     num = request.args.get('num', '1')
@@ -421,8 +433,9 @@ async def wiki_revert(request, name):
 
 @app.route("/member/signup", methods=['POST', 'GET'])
 async def wiki_signup(request):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     if request.ctx.session.get('id') == 1:
         return response.redirect('/')
@@ -468,8 +481,9 @@ async def wiki_signup(request):
 
 @app.route("/member/login", methods=['POST', 'GET'])
 async def wiki_login(request):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     if request.ctx.session.get('id') == 1:
         return response.redirect('/')
@@ -508,8 +522,9 @@ async def wiki_logout(request):
 
 @app.route("/discuss/<name:string>", methods=['POST', 'GET'])
 async def wiki_discuss(request, name):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data = ''
     discuss_get = await db.execute("select title, id, state, date, agree from dis where doc = ?", [name])
@@ -554,8 +569,9 @@ async def wiki_discuss(request, name):
 
 @app.route("/discuss/<name:string>/<num:int>", methods=['POST', 'GET'])
 async def wiki_discuss_thread(request, name, num):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
     
     data = ''
     thread_list = await db.execute("select id, data, date, ip, block, top from dis_log where code = ? and doc = ?", [num, name])
@@ -603,8 +619,9 @@ async def wiki_discuss_thread(request, name, num):
 
 @app.route("/discuss/<name:string>/<num:int>/setting", methods=['POST', 'GET'])
 async def wiki_discuss_thread_setting(request, name, int):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     discuss_title = db.execute("select title from dis where doc = ?", [name])
     discuss_title = discuss_title.fetchall()
@@ -624,8 +641,9 @@ async def wiki_discuss_thread_setting(request, name, int):
 
 @app.route("/recent/changes")
 async def wiki_recent_changes(request):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data = ''
     data_get = await db.execute("select id, title, date, ip, send, leng from doc_his order by id + 0 desc limit 30")
@@ -644,8 +662,9 @@ async def wiki_recent_changes(request):
 
 @app.route("/recent/discuss")
 async def wiki_recent_discuss(request):
-    setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
-    db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data = ''
     data_get = await db.execute("select doc, title, id, date from dis where state = ? order by date desc limit 30", ['normal'])
