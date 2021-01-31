@@ -13,8 +13,12 @@ async def date_time():
     return str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
 
 async def user_name(request):
-    if not request.ctx.session.get('id)') or request.ctx.session.get('id') == 0:
-        ip = get_client_ip(request)
+    if not request.ctx.session.get('id') or request.ctx.session.get('id') == 0:
+        if not request.remote_addr:
+            ip = "Error:ip"
+        else:
+            ip = request.remote_addr
+        return ip
     else:
         return request.ctx.session['id']
 

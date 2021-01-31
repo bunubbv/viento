@@ -603,13 +603,23 @@ async def wiki_discuss_thread(request, name, num):
             '''
 
     if request.method == "POST":
-        return 0
+        textarea_data = request.form.get('wiki_thread_textarea_1')
+        if not textarea_data:
+            return response.redirect("/error/")
+
+        discuss_num = await db.execute("select id from dis_log where doc = ? order by id desc", [name])
+        discuss_num = await discuss_num.fetchall()
+        discuss_num = int(discuss_num[0][0]) + 1
+ 
+        await db.execute("insert into dis_log (id, data, date, ip, block, top, code, doc) values (?, ?, ?, ?, '0', '0', ?, ?)", [discuss_num, textarea_data, await date_time(), await user_name(request), num, name])
+        await db.commit()
+        return response.redirect("/discuss/" + name + "/" + str(num))
 
     return jinja.render("index.html", request, wiki_set = await wiki_set(name),
         data = data + '''
             <form method="post">
                 <textarea class="wiki_textarea" name="wiki_thread_textarea_1"></textarea>
-                <button type="submit" class="wiki_button" name="wiki_thread_button_1">
+                <button type="submit" class="wiki_button" name="wiki_thread_button_1">확인</button>
             </form>
         ''',
         title = name,
@@ -631,7 +641,7 @@ async def wiki_discuss_thread_setting(request, name, int):
             <form method="post">
                 <input class="wiki_textbox" name="wiki_thread_textbox_setting_1"></textarea>
                 <input class="wiki_textbox" name="wiki_thread_textbox_setting_1"></textarea>
-                <button type="submit" class="wiki_button" name="wiki_thread_button_setting_1">
+                <button type="submit" class="wiki_button" name="wiki_thread_button_setting_1">확인</button>
             </form>
         ''',
         title = name,
