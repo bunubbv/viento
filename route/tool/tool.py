@@ -33,27 +33,32 @@ async def user_link(name):
 async def namespace_check(data):
     return 0
 
-async def wiki_set(data):
+async def wiki_set(request, data):
     setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
     db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data_footer = await db.execute("select data from wiki_set where name = 'license'")
-    footer = await data_footer.fetchall()
+    data_footer = await data_footer.fetchall()
 
     data_wiki = await db.execute("select data from wiki_set where name = 'name'")
-    wiki = await data_wiki.fetchall()
+    data_wiki = await data_wiki.fetchall()
 
-    date = ''
+    data_date = ''
 
     if data != 0:
         data_edit = await db.execute("select date from doc_his where title = ? order by date desc", [data])
-        date = await data_edit.fetchall()
+        data_date = await data_edit.fetchall()
 
-    footer = footer[0][0] if footer else 'ARR'
-    wiki = wiki[0][0] if wiki else 'Wiki'
-    date = date[0][0] if date else 0
+    if request.ctx.session.get("id") and request.ctx.session.get("id") != 0:
+        data_login = 1
+    else:
+        data_login = 0
 
-    return footer, wiki, date
+    data_footer = data_footer[0][0] if data_footer else 'ARR'
+    data_wiki = data_wiki[0][0] if data_wiki else 'Wiki'
+    data_date = data_date[0][0] if data_date else 0
+
+    return data_footer, data_wiki, data_date, data_login
 
 async def check_user():
     return 0

@@ -243,14 +243,14 @@ async def wiki_read(request, name):
     data = await data.fetchall()
 
     if data:    
-        return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+        return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
             data = await namumark(data[0][0]),
             title = name,
             sub = 0,
             menu = [['edit/' + name, '편집'], ['discuss/' + name, '토론'], ['backlink/' + name, '역링크'], ['history/' + name, '역사'], ['acl/' + name, 'ACL']]
         )
     else:
-        return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+        return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
             data = "해당 문서를 찾을 수 없습니다.", 
             title = name,
             sub = 0,
@@ -293,7 +293,7 @@ async def wiki_edit(request, name):
             await history_add(name, data, await date_time(), await user_name(request), send, '0')
             return response.redirect("/w/" + name)
             
-    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+    return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
             data = '''
                 <form method="post">
                     <textarea rows="25" class="wiki_textarea" name="wiki_edit_textarea_1">''' + html.escape(re.sub('<br>', '\n', data)) + '''</textarea>
@@ -320,9 +320,9 @@ async def wiki_history(request, name):
         
     for history_data in data_get:
         if data_get:
-            data += '<li>' + history_data[2] + ' ' + history_data[3] + '</li>'
+            data += '<li class="wiki_li">' + history_data[2] + ' | <a href="/raw/' + history_data[1] + '?num=' + history_data[0] + '">[원본]</a> <a href="/revert/' + history_data[1] + '?num=' + history_data[0] + '">[복구]</a> <a href="/raw/' + history_data[1] + '?num=' + history_data[0] + '">[비교]</a> | ' + await user_link(history_data[3]) + ' | r' + history_data[0] + ' |  <a href="/w/' + history_data[1] + '">' + history_data[1] + '</a> | (' + history_data[5] + ') (' + history_data[4] + ')' '</li>'
 
-    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+    return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
             data = data,
             title = name,
             sub = '역사',
@@ -346,7 +346,7 @@ async def wiki_delete(request, name):
             return response.redirect("/w/" + name)
             
     if data_get:
-        return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+        return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
             data = '''
                 <form method="post">
                     <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_delete_textbox_1">
@@ -379,7 +379,7 @@ async def wiki_move(request, name):
             return response.redirect("/w/" + change_name)
             
     if data_get:
-        return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+        return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
             data = '''
                 <form method="post">
                     <input type="text" value="''' + name + '''" class="wiki_textbox" name="wiki_move_textbox_1">
@@ -416,7 +416,7 @@ async def wiki_revert(request, name):
         return response.redirect("/w/" + name)
 
     if data_get:
-        return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+        return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
             data = '''
                 <form method="post">
                     <textarea rows="25" class="wiki_textarea" name="wiki_revert_textarea_1" readonly>''' + data_get + '''</textarea>
@@ -441,9 +441,12 @@ async def wiki_signup(request):
         return response.redirect('/')
 
     if request.method == 'POST':
-        signup_id = request.form.get('wiki_textbox_signup_1', '')
+        signup_id = request.form.get('wiki_signup_textbox_1', '')
         signup_password_1 = request.form.get('wiki_signup_textbox_2', '')
         signup_password_2 = request.form.get('wiki_signup_textbox_3', '')
+
+        if not signup_password_1 and not signup_password_2:
+            return response.redirect("/error/") # 오류 페이지 구현 필요
 
         if signup_password_1 != signup_password_2:
             return response.redirect("/error/") # 오류 페이지 구현 필요
@@ -465,7 +468,7 @@ async def wiki_signup(request):
         await db.commit()
         return response.redirect("/member/login")
 
-    return jinja.render("index.html", request, wiki_set = await wiki_set(0),
+    return jinja.render("index.html", request, wiki_set = await wiki_set(request, 0),
         data = '''
             <form method="post">
                 <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_signup_textbox_1">
@@ -499,7 +502,7 @@ async def wiki_login(request):
         else:
             return response.redirect('/error/') # 오류 페이지 구현 필요
 
-    return jinja.render("index.html", request, wiki_set = await wiki_set(0),
+    return jinja.render("index.html", request, wiki_set = await wiki_set(request, 0),
         data = '''
             <form method="post">
                 <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_login_textbox_1">
@@ -554,7 +557,7 @@ async def wiki_discuss(request, name):
 
         return response.redirect("/discuss/" + name + '/' + discuss_id)
 
-    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+    return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
         data = data + '''
             <form method="post">
                 <input type="text" placeholder="토론 제목" class="wiki_textbox" name="wiki_discuss_textbox_1">
@@ -589,6 +592,7 @@ async def wiki_discuss_thread(request, name, num):
                     </div>
                     <div class="wiki_thread_table_bottom">
                         ''' + thread_data[1] + '''
+                    </div>
                 </div>
             '''
         else:
@@ -615,7 +619,7 @@ async def wiki_discuss_thread(request, name, num):
         await db.commit()
         return response.redirect("/discuss/" + name + "/" + str(num))
 
-    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+    return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
         data = data + '''
             <form method="post">
                 <textarea class="wiki_textarea" name="wiki_thread_textarea_1"></textarea>
@@ -636,7 +640,7 @@ async def wiki_discuss_thread_setting(request, name, int):
     discuss_title = db.execute("select title from dis where doc = ?", [name])
     discuss_title = discuss_title.fetchall()
 
-    return jinja.render("index.html", request, wiki_set = await wiki_set(name),
+    return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
         data = '''
             <form method="post">
                 <input class="wiki_textbox" name="wiki_thread_textbox_setting_1"></textarea>
@@ -663,7 +667,7 @@ async def wiki_recent_changes(request):
         if data_get:
             data += '<li>' + history_data[2] + ' ' + history_data[3] + '</li>'
 
-    return jinja.render("index.html", request, wiki_set = await wiki_set(0),
+    return jinja.render("index.html", request, wiki_set = await wiki_set(request, 0),
         data = data,
         title = '최근 변경',
         sub = 0,
@@ -684,12 +688,46 @@ async def wiki_recent_discuss(request):
         if data_get:
             data += '<li>' + discuss_data[1] + ' ' + discuss_data[3] + '</li>'
 
-    return jinja.render("index.html", request, wiki_set = await wiki_set(0),
+    return jinja.render("index.html", request, wiki_set = await wiki_set(request, 0),
         data = data,
         title = '최근 토론',
         sub = 0,
         menu = 0
     )
+
+@app.route("/raw/<name:string>")
+async def wiki_raw(request, name):
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    args = RequestParameters()
+    num = request.args.get('num', '1')
+
+    raw_data = await db.execute("select data from doc_his where id = ? and title = ?", [num, name])
+    raw_data = await raw_data.fetchall()
+
+    if raw_data:
+        return jinja.render("index.html", request, wiki_set = await wiki_set(request, 0),
+            data = '<textarea class="wiki_textarea" id="wiki_textarea_raw_1" readonly>' + raw_data[0][0] + '</textarea>',
+            title = name,
+            sub = 'r' + num + ' RAW',
+            menu = [['w/' + name, '문서']]
+        )
+    else:
+        return response.redirect("/error/")
+
+@app.route("/diff/<name:string>")
+async def wiki_diff(request, name):
+    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
+        setting_data = json.loads(await f.read())
+        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    args = RequestParameters()
+    num1 = request.args.get('first', '1')
+    num2 = request.args.get('second', '2')
+
+    data_get = await db.execute("")
 
 ## API
 ## 문서 내용, 문서 RAW, 토론 내용, 최근 변경, 최근 토론, 이미지
