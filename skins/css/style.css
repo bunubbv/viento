@@ -126,6 +126,14 @@ a:hover {
     transition: 1s;
 }
 
+#searchbutton {
+    border: 1px solid #ced4da;
+    padding: 6px 12px 6px 12px;
+    background: #fff;
+    box-shadow: none;
+    border-radius: 0;
+}
+
 /* Wiki */
 
 .wiki_li {

@@ -1,6 +1,5 @@
 sanic
 sanic_jinja2
-sanic_ipware
 sanic_session
 aiosqlite
 aioredis

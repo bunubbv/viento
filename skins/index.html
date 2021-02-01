@@ -28,20 +28,22 @@
 							</li>
 						</ul>
 					</div>
-					<form method="post" action="/search" id="search" role="search"> 
-						<div class="input-group" style="width: 280px;"> 
-							<input id="search_input" class="input is-primary ui-autocomplete-input form-control" name="search" placeholder="검색" autocomplete="off" type="search"> 
-							<div class="input-group-append"> 
-								<button method="post" id="searchbutton" type="submit" formaction="/search" class="btn btn-outline-light">
-									<img src="/views/Material/img/search-black-18dp.svg">
-								</button> 
-								<button type="button" id="searchbutton" onclick="location.href='/random'" class="btn btn-outline-light">
-									<img src="/views/Material/img/shuffle-black-18dp.svg">
-								</button> 
+					<ul class="navbar-nav nav-flex-icons">
+						<form method="post" action="/search" id="search" role="search">
+							<div class="input-group" style="width: 275px;">
+								<input id="search_input" class="input is-primary ui-autocomplete-input form-control" name="search" placeholder="검색" autocomplete="off" type="search">
+								<div class="input-group-append">
+									<button method="post" id="searchbutton" type="submit" formaction="/search" class="btn btn-white">
+										<img src="/views/Material/img/search-black-18dp.svg">
+									</button>
+									<button type="button" id="searchbutton" onclick="location.href='/random'" style="border-radius: 0 0.25rem 0.25rem 0; margin-left: -4px;" class="btn btn-white">
+										<img src="/views/Material/img/shuffle-black-18dp.svg">
+									</button>
+								</div> 
 							</div> 
-						</div> 
-						<span class="icon is-small is-left"></span> 
-					</form>
+							<span class="icon is-small is-left"></span> 
+						</form> 
+					</ul>
 				</div>
 			</nav>
 			<div id="skin_top">

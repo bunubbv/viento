@@ -6,7 +6,6 @@ import secrets
 import binascii
 
 import aiosqlite
-from sanic_ipware import get_client_ip
 from sanic_session import Session
 
 async def date_time():
@@ -14,11 +13,12 @@ async def date_time():
 
 async def user_name(request):
     if not request.ctx.session.get('id') or request.ctx.session.get('id') == 0:
-        if not request.remote_addr:
-            ip = "Error:ip"
-        else:
+        if request.ip == '127.0.0.1' or request.ip == '::1':
             ip = request.remote_addr
-        return ip
+            return ip
+        else:
+            ip = request.ip
+            return ip
     else:
         return request.ctx.session['id']
 
