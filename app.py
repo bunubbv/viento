@@ -267,9 +267,11 @@ async def wiki_edit(request, name):
     data_get = await data_get.fetchall()
     
     data = ""
+    olddata = ''
 
     if data_get:
         data = data_get[0][0]
+        olddata = data
 
     if request.method == 'POST':
         data = request.form.get('wiki_edit_textarea_1', '')
@@ -283,14 +285,14 @@ async def wiki_edit(request, name):
                 data = re.sub('\n', '<br>', data)
                 await db.execute("update doc set data = ? where title = ?", [data, name])
                 await db.commit()
-                await history_add(name, data, await date_time(), await user_name(request), send, '0')
+                await history_add(name, data, await date_time(), await user_name(request), send, str(len(data) - len(olddata)))
                 return response.redirect("/w/" + name)
                 
         else:
             data = re.sub('\n', '<br>', data)
             await db.execute("insert into doc (title, data) values (?, ?)", [name, data])
             await db.commit()
-            await history_add(name, data, await date_time(), await user_name(request), send, '0')
+            await history_add(name, data, await date_time(), await user_name(request), send, str(len(data)))
             return response.redirect("/w/" + name)
             
     return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
@@ -402,17 +404,21 @@ async def wiki_revert(request, name):
 
     args = RequestParameters()
     num = request.args.get('num', '1')
+    
+    dbdata = await db.execute("select data from doc_his order by cast(id as integer) desc limit 1")
+    dbdata = await dbdata.fetchall()
+    current = dbdata[0][0]
 
     data_get = await db.execute("select data from doc_his where id = ?", [num])
     data_get = await data_get.fetchall()
     data_get = data_get[0][0]
 
     if request.method == 'POST':
-        send = request.form.get('wiki_revert_textbox__1', '')
+        send = request.form.get('wiki_revert_textbox_2', '')
         data_get = re.sub('\n', '<br>', data_get)
         await db.execute("update doc set data = ? where title = ?", [data_get, name])
         await db.commit()
-        await history_add(name, data_get, await date_time(), await user_name(request), send, '0')
+        await history_add(name, data_get, await date_time(), await user_name(request), send, str(len(current) - len(data_get)))
         return response.redirect("/w/" + name)
 
     if data_get:
@@ -464,6 +470,7 @@ async def wiki_signup(request):
             return response.redirect("/error/")
 
         encode_password = await password_encode(signup_password_1, signup_id)
+        
         await db.execute("insert into mbr (id, pw, acl, date, email) values (?, ?, ?, ?, ?)", [signup_id, encode_password, 'member', await date_time(), '']) # 추후 권한 기본 설정과 이메일 구현되면 수정 필요, mbr_log 기록 필요.
         await db.commit()
         return response.redirect("/member/login")
