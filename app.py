@@ -299,7 +299,9 @@ async def wiki_edit(request, name):
             data = '''
                 <form method="post">
                     <textarea rows="25" class="wiki_textarea" name="wiki_edit_textarea_1">''' + html.escape(re.sub('<br>', '\n', data)) + '''</textarea>
+                    <hr class="wiki_hr">
                     <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_edit_textbox_1">
+                    <hr class="wiki_hr">
                     <button type="submit" class="wiki_button" name="wiki_edit_button_1">저장</button>
                 </form>
             ''',

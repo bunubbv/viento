@@ -81,16 +81,6 @@ a {
     padding: 10px;
 }
 
-input {
-    width: 100%;
-    border: 1px solid #ccc;
-}
-
-textarea {
-    width: 100%;
-    border: 1px solid #ccc;
-}
-
 #sub {
     font-size: 42px;
 }
@@ -118,6 +108,7 @@ nav {
 
 #skin_data {
     padding-top: 18px;
+    padding-bottom: 18px;
 }
 
 a:hover {
@@ -132,6 +123,47 @@ a:hover {
     background: #fff;
     box-shadow: none;
     border-radius: 0;
+}
+
+select {
+	display: inline-block;
+	padding: 7px 12px;
+	font-size: 1rem;
+	line-height: 1.5;
+	background-color: #fff;
+	background-image: none;
+	border: 1px solid #e1e8ed;
+	border-radius: .25rem
+}
+
+input {
+    border: 1px solid #ced4da;
+	padding: 5px;
+    border-radius: .25rem;
+    width: 100%;
+}
+
+textarea {
+	width: 100%;
+    border: 1px solid #ced4da;
+	padding: 10px;
+	border-radius: .25rem;
+    height: 500px;
+    margin-bottom: -7px;
+}
+
+button {
+    border: 1px solid #ced4da;
+    padding: 7px 12px;
+    background-color: white;
+    border-radius: .25rem;
+}
+
+.wiki_hr {
+    height: 0!important;
+    border: 0;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 /* Wiki */
