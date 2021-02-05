@@ -661,7 +661,9 @@ async def wiki_discuss_thread_setting(request, name, num):
             return response.redirect("setting")
         
         if change_title != discuss_title[0][0]:
-            return response.redirect("setting")
+            await db.execute("update dis set title = ? where doc = ? and id = ?", [change_title, discuss_doc[0][0], str(num)])
+            await db.commit()
+            return response.redirect("/discuss/" + discuss_doc[0][0] + "/" + str(num) + "/setting")
         
         if change_doc != discuss_doc[0][0]:
             number_check = await db.execute("select id from dis where doc = ? and id = ?", [change_doc, str(num)])
