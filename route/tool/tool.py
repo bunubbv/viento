@@ -104,7 +104,7 @@ async def password_encode(data, name):
 
     elif encode_type[0][0] == 'pbkdf2-sha512':
         #TODO : Need slow password hash algorithm
-        return CreateAuth(name, data)
+        return await CreateAuth(name, data)
 
 async def _hashpass(username: str, password: str, salt: str):
     hashsalt = (salt + username).encode('utf-8')
