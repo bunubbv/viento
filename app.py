@@ -639,19 +639,55 @@ async def wiki_discuss_thread(request, name, num):
     )
 
 @app.route("/discuss/<name:string>/<num:int>/setting", methods=['POST', 'GET'])
-async def wiki_discuss_thread_setting(request, name, int):
+async def wiki_discuss_thread_setting(request, name, num):
     async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
         setting_data = json.loads(await f.read())
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
-    discuss_title = db.execute("select title from dis where doc = ?", [name])
-    discuss_title = discuss_title.fetchall()
+    discuss_title = await db.execute("select title from dis where doc = ? and id = ?", [name, num])
+    discuss_title = await discuss_title.fetchall()
+
+    discuss_doc = await db.execute("select doc from dis where doc = ? and id = ?", [name, num])
+    discuss_doc = await discuss_doc.fetchall()
+
+    if request.method == 'POST':
+        change_title = request.form.get('wiki_thread_textbox_setting_1', '')
+        change_doc = request.form.get('wiki_thread_textbox_setting_2', '')
+
+        if change_title == '' or change_doc == '':
+            return response.redirect("/error/")
+
+        if change_title == discuss_title[0][0] and change_doc == discuss_doc[0][0]:
+            return response.redirect("setting")
+        
+        if change_title != discuss_title[0][0]:
+            return response.redirect("setting")
+        
+        if change_doc != discuss_doc[0][0]:
+            number_check = await db.execute("select id from dis where doc = ? and id = ?", [change_doc, str(num)])
+            number_check = await number_check.fetchall()
+
+            if number_check:
+                discuss_renew_num = await db.execute("select id from dis where doc = ? order by id desc", [change_doc])
+                discuss_renew_num = await discuss_renew_num.fetchall()
+                discuss_renew_num = str(int(discuss_renew_num[0][0]) + 1)
+
+                await db.execute("update dis set doc = ?, id = ? where doc = ? and id = ?", [change_doc, discuss_renew_num, discuss_doc[0][0], str(num)])
+                await db.execute("update dis_log set code = ?, doc = ? where code = ? and doc = ?", [discuss_renew_num, change_doc, str(num), discuss_doc[0][0]])
+                await db.commit()
+                return response.redirect("/discuss/" + change_doc + "/" + discuss_renew_num + "/setting")
+            
+            else:
+                await db.execute("update dis set doc = ? where doc = ?", [change_doc, discuss_doc[0][0]])
+                await db.execute("update dis_log set doc = ? where doc = ?", [change_doc, discuss_doc[0][0]])
+                await db.commit()
+                return response.redirect("/discuss/" + change_doc + "/" + str(num) + "/setting")
 
     return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
         data = '''
             <form method="post">
-                <input class="wiki_textbox" name="wiki_thread_textbox_setting_1"></textarea>
-                <input class="wiki_textbox" name="wiki_thread_textbox_setting_1"></textarea>
+                <input class="wiki_textbox" name="wiki_thread_textbox_setting_1" value="''' + discuss_title[0][0] + '''">
+                <input class="wiki_textbox" name="wiki_thread_textbox_setting_2" value="''' + discuss_doc[0][0] + '''">
                 <button type="submit" class="wiki_button" name="wiki_thread_button_setting_1">확인</button>
             </form>
         ''',

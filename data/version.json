@@ -1,8 +1,8 @@
 { 
 	"main": {
-		"engine_version": "v0.6.1-alpha",
+		"engine_version": "v0.7.0-alpha",
 		"markup_version": "v0.0.4-alpha",
-		"build_count": "2021-02-02.001",
+		"build_count": "2021-02-05.001",
 		"renew_count": "1"
 	}
 }
