@@ -12,7 +12,7 @@ import os
 import re
 
 from route.tool.tool import *
-from route.mark.namumark import *
+from route.mark.py.namumark import *
 
 setting_data = json.loads(open('data/setting.json', encoding = 'utf8').read())
 version_load = json.loads(open('data/version.json', encoding='utf-8').read())
@@ -29,8 +29,6 @@ print('markup_version : ' + markup_version)
 print('build_count : ' + build_count)
 print('renew_count : ' + renew_count)
 print('')
-
-## 카멜 표기법으로 변경 필요, 오픈나무는 별도의 툴을 통한 호환만 지원하며 구조를 완전히 다르게 변경. (alpha)
 
 for route_file in os.listdir("route"):
     py_file = re.search(r"(.+)\.py$", route_file)
@@ -354,6 +352,7 @@ async def wiki_delete(request, name):
             data = '''
                 <form method="post">
                     <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_delete_textbox_1">
+                    <hr class="wiki_hr">
                     <button type="submit" class="wiki_button" name="wiki_delete_button_1">확인</button>
                 </form>
             ''',
@@ -387,7 +386,9 @@ async def wiki_move(request, name):
             data = '''
                 <form method="post">
                     <input type="text" value="''' + name + '''" class="wiki_textbox" name="wiki_move_textbox_1">
+                    <hr class="wiki_hr">
                     <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_move_textbox_2">
+                    <hr class="wiki_hr">
                     <button type="submit" class="wiki_button" name="wiki_move_button_1">확인</button>
                 </form>
             ''',
@@ -428,7 +429,9 @@ async def wiki_revert(request, name):
             data = '''
                 <form method="post">
                     <textarea rows="25" class="wiki_textarea" name="wiki_revert_textarea_1" readonly>''' + data_get + '''</textarea>
+                    <hr class="wiki_hr">
                     <input type="text" placeholder="요약" class="wiki_textbox" name="wiki_revert_textbox_2">
+                    <hr class="wiki_hr">
                     <button type="submit" class="wiki_button" name="wiki_revert_button_1">확인</button>
                 </form>
             ''',
@@ -473,16 +476,29 @@ async def wiki_signup(request):
 
         encode_password = await password_encode(signup_password_1, signup_id)
         
-        await db.execute("insert into mbr (id, pw, acl, date, email) values (?, ?, ?, ?, ?)", [signup_id, encode_password, 'member', await date_time(), '']) # 추후 권한 기본 설정과 이메일 구현되면 수정 필요, mbr_log 기록 필요.
-        await db.commit()
-        return response.redirect("/member/login")
+        first_check = await db.execute("select * from mbr limit 1")
+        first_check = await first_check.fetchall()
+
+        if not first_check:
+            await db.execute("insert into mbr (id, pw, acl, date, email) values (?, ?, ?, ?, ?)", [signup_id, encode_password, 'owner', await date_time(), ''])
+            await db.execute("insert into mbr_log (name, ip, ua, today) values (?, ?, ?, ?)", [signup_id, '0', '0', await date_time()])
+            await db.commit()
+            return response.redirect("/member/login")
+        else:
+            await db.execute("insert into mbr (id, pw, acl, date, email) values (?, ?, ?, ?, ?)", [signup_id, encode_password, 'member', await date_time(), '']) # 추후 권한 개편 시 member가 아닌 직접 선택하도록 변경.
+            await db.execute("insert into mbr_log (name, ip, ua, today) values (?, ?, ?, ?)", [signup_id, '0', '0', await date_time()])
+            await db.commit()
+            return response.redirect("/member/login")
 
     return jinja.render("index.html", request, wiki_set = await wiki_set(request, 0),
         data = '''
             <form method="post">
                 <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_signup_textbox_1">
+                <hr class="wiki_hr">
                 <input type="password" placeholder="비밀번호" class="wiki_textbox" name="wiki_signup_textbox_2">
+                <hr class="wiki_hr">
                 <input type="password" placeholder="비밀번호 확인" class="wiki_textbox" name="wiki_signup_textbox_3">
+                <hr class="wiki_hr">
                 <button type="submit" class="wiki_button" name="wiki_signup_button_1">확인</button>
             </form>
         ''',
@@ -515,7 +531,9 @@ async def wiki_login(request):
         data = '''
             <form method="post">
                 <input type="text" placeholder="아이디" class="wiki_textbox" name="wiki_login_textbox_1">
+                <hr class="wiki_hr">
                 <input type="password" placeholder="비밀번호" class="wiki_textbox" name="wiki_login_textbox_2">
+                <hr class="wiki_hr">
                 <button type="submit" class="wiki_button" name="wiki_login_button_1">확인</button>
             </form>
         ''',
@@ -543,7 +561,8 @@ async def wiki_discuss(request, name):
     discuss_get = await discuss_get.fetchall()
 
     for discuss in discuss_get:
-        data += '<li>' + discuss[0] + discuss[1] + discuss[2] + discuss[3] + discuss[4] + '</li>'
+        discuss_preview = await db.execute("select")
+        data += '<h2><a href="/discuss/' + name + '/' + discuss[1] + '">' + discuss[1] + '. ' + discuss[0] + '</a></h2><hr class="wiki_hr">'
 
     if request.method == "POST":
         discuss_title = request.form.get('wiki_discuss_textbox_1', '')
@@ -570,7 +589,9 @@ async def wiki_discuss(request, name):
         data = data + '''
             <form method="post">
                 <input type="text" placeholder="토론 제목" class="wiki_textbox" name="wiki_discuss_textbox_1">
+                <hr class="wiki_hr">
                 <textarea placeholder="토론 내용" class="wiki_textarea" name="wiki_discuss_textarea_1"></textarea>
+                <hr class="wiki_hr">
                 <button type="submit" class="wiki_button" name="wiki_discuss_button_1">확인</button>
             </form>
         ''',
@@ -632,6 +653,7 @@ async def wiki_discuss_thread(request, name, num):
         data = data + '''
             <form method="post">
                 <textarea class="wiki_textarea" name="wiki_thread_textarea_1"></textarea>
+                <hr class="wiki_hr">
                 <button type="submit" class="wiki_button" name="wiki_thread_button_1">확인</button>
             </form>
         ''',
@@ -691,7 +713,9 @@ async def wiki_discuss_thread_setting(request, name, num):
         data = '''
             <form method="post">
                 <input class="wiki_textbox" name="wiki_thread_textbox_setting_1" value="''' + discuss_title[0][0] + '''">
+                <hr class="wiki_hr">
                 <input class="wiki_textbox" name="wiki_thread_textbox_setting_2" value="''' + discuss_doc[0][0] + '''">
+                <hr class="wiki_hr">
                 <button type="submit" class="wiki_button" name="wiki_thread_button_setting_1">확인</button>
             </form>
         ''',

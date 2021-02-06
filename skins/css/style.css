@@ -148,7 +148,6 @@ textarea {
     border: 1px solid #ced4da;
 	padding: 10px;
 	border-radius: .25rem;
-    height: 500px;
     margin-bottom: -7px;
 }
 
@@ -170,4 +169,9 @@ button {
 
 .wiki_li {
     margin-bottom: 5px;
+}
+
+.wiki_thread_table {
+    padding: 7px 12px;
+    
 }
