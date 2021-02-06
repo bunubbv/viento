@@ -42,16 +42,14 @@ VientoEngine에는 확장 기능이 존재합니다. 확장 기능 스토어에�
 ## 라이선스
 VientoEngine은 BSD 3-Clause License 라이선스로 보호받고 있습니다. VientoEngine을 사용할 때는 반드시 라이선스를 준수해야 하며, 위반할 시 법적 조치가 따를 수 있습니다. 포함된 코드는 아래 목록을 참조하시기 바랍니다.
 
-다음과 같은 프로젝트, 코드를 사용했습니다.
  * [openNAMU](https://github.com/2du/openNAMU) - namumark.py
  * [highlightjs](https://highlightjs.org/) - Syntax highlighting
  * [MathJax](https://www.mathjax.org/) - Numerical expression
  * [sanic-jinja2](https://github.com/lixxu/sanic-jinja2) - Jinja2 support for Sanic
- * [sanic-ipware](https://github.com/vltr/sanic-ipware) - Get client ip address
  * [sanic-session](https://github.com/xen/sanic_session) - session management extension
 
 ## 오픈나무
-VientoEngine은 [오픈나무](https://github.com/2du/openNAMU)와 호환됩니다. 하지만 아직 완벽하게 호환되지는 않으며, 일부 수정이 필요합니다.
+VientoEngine은 [오픈나무](https://github.com/2du/openNAMU)와 호환됩니다. 하지만 일부 수정이 필요합니다.
 
 자세한 내용은 [마이그레이션 가이드](https://viento.badawiki.site#main3)를 참조하세요.
 
