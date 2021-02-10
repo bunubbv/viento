@@ -147,8 +147,7 @@ async def run():
         db_create['acl'] = ['title', 'decu', 'dis', 'view', 'why']
         db_create['backlink'] = ['title', 'link', 'type']
         db_create['wiki_set'] = ['name', 'data', 'coverage']
-        db_create['list_per_1'] = ['name']
-        db_create['list_per_2'] = ['name', 'acl', 'top']
+        db_create['list_per'] = ['name', 'acl']
         db_create['list_fil'] = ['name', 'regex', 'sub']
         db_create['html_fil'] = ['html', 'kind', 'plus']
         db_create['list_alarm'] = ['name', 'data', 'date']
@@ -315,15 +314,32 @@ async def wiki_history(request, name):
         setting_data = json.loads(await f.read())
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')
     
-    data = ''
+    data = '''
+        <table class="wiki_recent_table">
+            <tr class="wiki_recent_table_top">
+                <td class="wiki_table_recent_top">문서</td>
+                <td class="wiki_table_recent_top">편집자</td>
+                <td class="wiki_table_recent_top">시간</td>
+            </tr>
+    '''
+
     data_get = await db.execute("select id, title, date, ip, send, leng from doc_his where title = ? order by id + 0 desc limit 30", [name])
     data_get = await data_get.fetchall()
-
-    # if request.method == 'POST': 비교 기능 등
-        
+    
     for history_data in data_get:
         if data_get:
-            data += '<li class="wiki_li">' + history_data[2] + ' | <a href="/raw/' + history_data[1] + '?num=' + history_data[0] + '">[원본]</a> <a href="/revert/' + history_data[1] + '?num=' + history_data[0] + '">[복구]</a> <a href="/raw/' + history_data[1] + '?num=' + history_data[0] + '">[비교]</a> | ' + await user_link(history_data[3]) + ' | r' + history_data[0] + ' |  <a href="/w/' + history_data[1] + '">' + history_data[1] + '</a> | (' + history_data[5] + ') (' + history_data[4] + ')' '</li>'
+            data += '''
+                <tr class="wiki_recent_table_middle">
+                    <td class="wiki_table_recent"><a href="/w/''' + history_data[1] + '''">''' + history_data[1] + '''</a> (''' + history_data[5] + ''')</td>
+                    <td class="wiki_table_recent">''' + await user_link(history_data[3]) + '''</td>
+                    <td class="wiki_table_recent">''' + history_data[2] + '''
+                </tr>
+                <tr>
+                    <td colspan="3" class="wiki_table_recent">''' + history_data[4] + '''</td>
+                </tr>
+            '''
+
+    data += '</table>'
 
     return jinja.render("index.html", request, wiki_set = await wiki_set(request, name),
             data = data,
@@ -732,13 +748,32 @@ async def wiki_recent_changes(request):
         setting_data = json.loads(await f.read())
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
-    data = ''
+    data = '''
+        <table class="wiki_recent_table">
+            <tr class="wiki_recent_table_top">
+                <td class="wiki_table_recent_top">문서</td>
+                <td class="wiki_table_recent_top">편집자</td>
+                <td class="wiki_table_recent_top">시간</td>
+            </tr>
+    '''
+
     data_get = await db.execute("select id, title, date, ip, send, leng from doc_his order by id + 0 desc limit 30")
     data_get = await data_get.fetchall()
         
     for history_data in data_get:
         if data_get:
-            data += '<li class="wiki_li">' + history_data[2] + ' ' + history_data[3] + '</li>'
+            data += '''
+                <tr class="wiki_recent_table_middle">
+                    <td class="wiki_table_recent"><a href="/w/''' + history_data[1] + '''">''' + history_data[1] + '''</a> (''' + history_data[5] + ''')</td>
+                    <td class="wiki_table_recent">''' + await user_link(history_data[3]) + '''</td>
+                    <td class="wiki_table_recent">''' + history_data[2] + '''
+                </tr>
+                <tr>
+                    <td colspan="3" class="wiki_table_recent">''' + history_data[4] + '''</td>
+                </tr>
+            '''
+
+    data += '</table>'
 
     return jinja.render("index.html", request, wiki_set = await wiki_set(request, 0),
         data = data,
@@ -808,14 +843,13 @@ async def wiki_manage(request):
         setting_data = json.loads(await f.read())
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
-@app.route("/manage/permission")
-async def wiki_manage_permission(request):
+@app.route("/manage/group")
+async def wiki_manage_group(request):
     async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
         setting_data = json.loads(await f.read())
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data = ''
-    num = 0
     li = ''
     first_permission_get = await db.execute("select name from list_per_1")
     first_permission_get = await first_permission_get.fetchall()
@@ -824,18 +858,13 @@ async def wiki_manage_permission(request):
         return 0
 
     for first in first_permission_get:
-        second_permission_get = await db.execute("select name, acl from list_per_2 where top = ?", [first[num]])
-        second_permission_get = await second_permission_get.fetchall()
-        li += '<li class="wiki_li"><b>' + first[num] + '</b>'
-        num += 1
-        for second in second_permission_get:
-            li += '<li class="wiki_li" style="margin-left: 20px;"><a href="/manage/permission/' + second[0] + '">' + second[0] + '</a></li>'
+        li += '<li class="wiki_li" style="margin-left: 20px;"><a href="/manage/group/' + first[0] + '">' + first[0] + '</a></li>'
 
     return jinja.render("index.html", request, wiki_set = await wiki_set(request, 0),
         data = li,
         title = '권한 그룹',
         sub = 0,
-        menu = [['manage/permission/add/1', '1차 그룹 생성'], ['manage/permission/add/2', '2차 그룹 생성'], ['manage', '이전']]
+        menu = [['manage/group/add', '생성'], ['manage', '이전']]
     )
 
 @app.route("/manage/grant")
@@ -844,8 +873,8 @@ async def wiki_manage_grant(request):
         setting_data = json.loads(await f.read())
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
-@app.route("/manage/acl")
-async def wiki_manage_acl(request):
+@app.route("/manage/namespace")
+async def wiki_manage_namespace(request):
     async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
         setting_data = json.loads(await f.read())
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')

@@ -61,7 +61,7 @@ a {
 #skin_toolbar {
     margin-top: -27px;
     font-size: 14.5px;
-    padding: 5px 12px;
+    padding: 7px 12px;
     float: right;
     display: inline-block;
     font-weight: 500;
@@ -163,6 +163,24 @@ button {
     border: 0;
     margin-top: 5px;
     margin-bottom: 5px;
+}
+
+.wiki_recent_table {
+    width: 100%;
+    text-align: center;
+    border: 1px solid #efefef;
+}
+
+.wiki_table_recent_top {
+    padding: 12px 17px;
+    background-color: #f8f8f8;
+}
+
+.wiki_table_recent {
+    width: 33.3%;
+    padding: 12px 17px;
+    border: 1px solid #efefef;
+    height: 45px;
 }
 
 /* Wiki */
