@@ -56,7 +56,12 @@ async def wiki_set(request, data):
 
     data_footer = data_footer[0][0] if data_footer else 'ARR'
     data_wiki = data_wiki[0][0] if data_wiki else 'Wiki'
-    data_date = data_date[0][0] if data_date else 0
+    if data == 0:
+        data_date = 0
+    elif not data_date:
+        data_date = 1
+    else:
+        data_date = data_date[0][0]
 
     return data_footer, data_wiki, data_date, data_login
 

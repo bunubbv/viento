@@ -203,6 +203,19 @@ table {
     height: 32px;
 }
 
+.wiki_history_table {
+    width: 100%;
+    text-align: center;
+}
+
+.wiki_table_history_top {
+    width: 33.3%;
+}
+
+.wiki_table_history {
+    height: 32px;
+}
+
 /* Wiki */
 
 .wiki_li {

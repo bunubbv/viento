@@ -8,6 +8,7 @@ import aioredis
 import asyncio
 import json
 import html
+import sys
 import os
 import re
 
@@ -108,7 +109,7 @@ async def run():
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     db_create = {}
-    db_create['table'] = ['doc', 'doc_cac', 'doc_his', 'rec_dis', 'rec_ban', 'rec_log', 'mbr', 'mbr_set', 'mbr_log', 'ban', 'dis', 'dis_log', 'acl', 'backlink', 'wiki_set', 'list_per_1', 'list_per_2', 'list_fil', 'html_fil', 'list_alarm', 'list_watch', 'list_inter']
+    db_create['table'] = ['doc', 'doc_cac', 'doc_his', 'rec_dis', 'rec_ban', 'rec_log', 'mbr', 'mbr_set', 'mbr_log', 'ban', 'dis', 'dis_log', 'acl', 'backlink', 'wiki_set', 'list_per', 'list_fil', 'html_fil', 'list_alarm', 'list_watch', 'list_inter']
     
     for i in db_create['table']:
         try:
@@ -315,11 +316,11 @@ async def wiki_history(request, name):
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')
     
     data = '''
-        <table class="wiki_recent_table">
-            <tr class="wiki_recent_table_top">
-                <td class="wiki_table_recent_top">문서</td>
-                <td class="wiki_table_recent_top">편집자</td>
-                <td class="wiki_table_recent_top">시간</td>
+        <table class="wiki_history_table">
+            <tr class="wiki_history_table_top">
+                <td class="wiki_table_history_top">문서</td>
+                <td class="wiki_table_history_top">편집자</td>
+                <td class="wiki_table_history_top">시간</td>
             </tr>
     '''
 
@@ -329,13 +330,13 @@ async def wiki_history(request, name):
     for history_data in data_get:
         if data_get:
             data += '''
-                <tr class="wiki_recent_table_middle">
-                    <td class="wiki_table_recent"><a href="/w/''' + history_data[1] + '''">''' + history_data[1] + '''</a> (''' + history_data[5] + ''')</td>
-                    <td class="wiki_table_recent">''' + await user_link(history_data[3]) + '''</td>
-                    <td class="wiki_table_recent">''' + history_data[2] + '''
+                <tr class="wiki_history_table_middle">
+                    <td class="wiki_table_history"><a href="/w/''' + history_data[1] + '''">''' + history_data[1] + '''</a> (''' + history_data[5] + ''')</td>
+                    <td class="wiki_table_history">''' + await user_link(history_data[3]) + '''</td>
+                    <td class="wiki_table_history">''' + history_data[2] + '''
                 </tr>
                 <tr>
-                    <td colspan="3" class="wiki_table_recent">''' + history_data[4] + '''</td>
+                    <td colspan="3" class="wiki_table_history">''' + history_data[4] + '''</td>
                 </tr>
             '''
 
@@ -804,7 +805,7 @@ async def wiki_recent_discuss(request):
         if data_get:
             data += '''
                 <tr class="wiki_discuss_table_middle">
-                    <td class="wiki_table_discuss"><a href="/w/''' + discuss_data[0] + '''/''' + discuss_data[1] + '''">''' + discuss_data[1] + '''</a></td>
+                    <td class="wiki_table_discuss"><a href="/discuss/''' + discuss_data[0] + '''/''' + discuss_data[2] + '''">''' + discuss_data[1] + '''</a></td>
                     <td class="wiki_table_discuss"><a href="/w/''' + discuss_data[0] + '''">''' + discuss_data[0] + '''</a></td>
                     <td class="wiki_table_discuss">''' + discuss_data[3] + '''</td>
                 </tr>
@@ -900,6 +901,14 @@ async def wiki_manage_restart(request):
     async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
         setting_data = json.loads(await f.read())
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')
+
+    try:
+        os.execl(sys.executable, sys.executable, *sys.argv)
+    except:
+        try:
+            os.execl(sys.executable, '"' + sys.executable + '"', *sys.argv)
+        except:
+            return re_error('/error/33')
 
 @app.route("/manage/engine")
 async def wiki_manage_engine(request):

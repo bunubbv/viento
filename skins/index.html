@@ -55,10 +55,12 @@
 						{% endif %}
 					</div>
 					<div class="skin_date">
-						{% if wiki_set[2] != 0 %}
-							{{ wiki_set[2] }}에 마지막으로 편집되었습니다.
-						{% else %}
+						{% if wiki_set[2] == 0 %}
+							특수 문서입니다. 다양한 기능은 사이드바를 확인해보세요.
+						{% elif wiki_set[2] == 1 %}
 							해당 문서가 존재하지 않습니다. 새 문서를 만들어보세요.
+						{% else %}
+							{{ wiki_set[2] }}에 마지막으로 편집되었습니다.
 						{% endif %}
 					</div>
 					{% if menu != 0 %}
