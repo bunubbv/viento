@@ -749,11 +749,11 @@ async def wiki_recent_changes(request):
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
     data = '''
-        <table class="wiki_recent_table">
-            <tr class="wiki_recent_table_top">
-                <td class="wiki_table_recent_top">문서</td>
-                <td class="wiki_table_recent_top">편집자</td>
-                <td class="wiki_table_recent_top">시간</td>
+        <table class="wiki_changes_table">
+            <tr class="wiki_changes_table_top">
+                <td class="wiki_table_changes_top">문서</td>
+                <td class="wiki_table_changes_top">편집자</td>
+                <td class="wiki_table_changes_top">시간</td>
             </tr>
     '''
 
@@ -763,13 +763,13 @@ async def wiki_recent_changes(request):
     for history_data in data_get:
         if data_get:
             data += '''
-                <tr class="wiki_recent_table_middle">
-                    <td class="wiki_table_recent"><a href="/w/''' + history_data[1] + '''">''' + history_data[1] + '''</a> (''' + history_data[5] + ''')</td>
-                    <td class="wiki_table_recent">''' + await user_link(history_data[3]) + '''</td>
-                    <td class="wiki_table_recent">''' + history_data[2] + '''
+                <tr class="wiki_changes_table_middle">
+                    <td class="wiki_table_changes"><a href="/w/''' + history_data[1] + '''">''' + history_data[1] + '''</a> (''' + history_data[5] + ''')</td>
+                    <td class="wiki_table_changes">''' + await user_link(history_data[3]) + '''</td>
+                    <td class="wiki_table_changes">''' + history_data[2] + '''
                 </tr>
                 <tr>
-                    <td colspan="3" class="wiki_table_recent">''' + history_data[4] + '''</td>
+                    <td colspan="3" class="wiki_table_changes">''' + history_data[4] + '''</td>
                 </tr>
             '''
 
@@ -788,13 +788,29 @@ async def wiki_recent_discuss(request):
         setting_data = json.loads(await f.read())
         db = await aiosqlite.connect(setting_data['db_name'] + '.db')
 
-    data = ''
+        data = '''
+        <table class="wiki_discuss_table">
+            <tr class="wiki_discuss_table_top">
+                <td class="wiki_table_discuss_top">토론</td>
+                <td class="wiki_table_discuss_top">문서명</td>
+                <td class="wiki_table_discuss_top">시간</td>
+            </tr>
+    '''
+
     data_get = await db.execute("select doc, title, id, date from dis where state = ? order by date desc limit 30", ['normal'])
     data_get = await data_get.fetchall()
         
     for discuss_data in data_get:
         if data_get:
-            data += '<li class="wiki_li">' + discuss_data[1] + ' ' + discuss_data[3] + '</li>'
+            data += '''
+                <tr class="wiki_discuss_table_middle">
+                    <td class="wiki_table_discuss"><a href="/w/''' + discuss_data[0] + '''/''' + discuss_data[1] + '''">''' + discuss_data[1] + '''</a></td>
+                    <td class="wiki_table_discuss"><a href="/w/''' + discuss_data[0] + '''">''' + discuss_data[0] + '''</a></td>
+                    <td class="wiki_table_discuss">''' + discuss_data[3] + '''</td>
+                </tr>
+            '''
+
+    data += '</table>'
 
     return jinja.render("index.html", request, wiki_set = await wiki_set(request, 0),
         data = data,

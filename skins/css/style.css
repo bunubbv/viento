@@ -3,11 +3,13 @@ html {
 }
 
 body {
-    font-family: NanumBarunGothic, sans-serif !important;
+    font-family: 나눔스퀘어, NanumSquare, sans-serif !important;
     font-size: 14.5px!important;
     padding: 0;
     margin: 0;
     height: 100%;
+    letter-spacing: -0.5px;
+    transform: skew(-0.001deg);
 }
 
 #skin_nav {
@@ -20,7 +22,7 @@ body {
     height: 40vh;
     background: linear-gradient(to right, #00afff, #008dcf);
     font-size: 46px;
-    font-weight: 600;
+    font-weight: 800;
     color: white;
     display: flex;
 }
@@ -165,22 +167,40 @@ button {
     margin-bottom: 5px;
 }
 
-.wiki_recent_table {
+td { 
+    padding: 5px 10px;
+    border: 1px solid #dddddd;
+}
+	
+table { 
+    border-collapse: collapse;
+    background-color: #f5f5f5;
+}
+
+.wiki_changes_table {
     width: 100%;
     text-align: center;
-    border: 1px solid #efefef;
 }
 
-.wiki_table_recent_top {
-    padding: 12px 17px;
-    background-color: #f8f8f8;
-}
-
-.wiki_table_recent {
+.wiki_table_changes_top {
     width: 33.3%;
-    padding: 12px 17px;
-    border: 1px solid #efefef;
-    height: 45px;
+}
+
+.wiki_table_changes {
+    height: 32px;
+}
+
+.wiki_discuss_table {
+    width: 100%;
+    text-align: center;
+}
+
+.wiki_table_discuss_top {
+    width: 33.3%;
+}
+
+.wiki_table_discuss {
+    height: 32px;
 }
 
 /* Wiki */
