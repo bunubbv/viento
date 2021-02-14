@@ -629,13 +629,16 @@ async def wiki_discuss_thread(request, name, num):
     thread_list = await db.execute("select id, data, date, ip, block, top from dis_log where code = ? and doc = ?", [num, name])
     thread_list = await thread_list.fetchall()
 
+    thread_user = await db.execute("select ip from dis_log where id = '1'")
+    thread_user = await thread_user.fetchall()
+
     if not thread_list:
         return response.redirect("/error/") # 오류 구현 필요
 
-    for thread_data in thread_list:
-        if thread_data[3] != '1':
+    for thread_data in thread_list: # 비효율적인 구조, 추후 개선 예정.
+        if thread_data[3] != '1' and thread_user[0][0] == thread_data[3]:
             data += '''
-                <div class="wiki_thread_table">
+                <div class="wiki_thread_table_first">
                     <div class="wiki_thread_table_top">
                         ''' + thread_data[0] + ''' ''' + thread_data[3] + ''' ''' + thread_data[4] + '''
                     </div>
@@ -644,14 +647,37 @@ async def wiki_discuss_thread(request, name, num):
                     </div>
                 </div>
             '''
-        else:
+        elif thread_data[3] != '1' and thread_user[0][0] != thread_data[3]:
             data += '''
-                <div class="wiki_thread_table">
+                <div class="wiki_thread_table_other">
+                    <div class="wiki_thread_table_top">
+                        ''' + thread_data[0] + ''' ''' + thread_data[3] + ''' ''' + thread_data[4] + '''
+                    </div>
+                    <div class="wiki_thread_table_bottom">
+                        ''' + thread_data[1] + '''
+                    </div>
+                </div>
+            '''
+        elif thread_data[3] == '1' and thread_user[0][0] == thread_data[3]:
+            data += '''
+                <div class="wiki_thread_table_first_blind">
                     <div class="wiki_thread_table_top">
                         ''' + thread_data[0] + ''' ''' + thread_data[3] + ''' ''' + thread_data[2] + '''
                     </div>
                     <div class="wiki_thread_table_bottom">
                         블라인드된 스레드입니다.
+                        </div>
+                </div>
+            '''
+        else:
+            data += '''
+                <div class="wiki_thread_table_other_blind">
+                    <div class="wiki_thread_table_top">
+                        ''' + thread_data[0] + ''' ''' + thread_data[3] + ''' ''' + thread_data[2] + '''
+                    </div>
+                    <div class="wiki_thread_table_bottom">
+                        블라인드된 스레드입니다.
+                        </div>
                 </div>
             '''
 
@@ -868,20 +894,20 @@ async def wiki_manage_group(request):
 
     data = ''
     li = ''
-    first_permission_get = await db.execute("select name from list_per_1")
-    first_permission_get = await first_permission_get.fetchall()
+    permission_get = await db.execute("select name from list_per")
+    permission_get = await permission_get.fetchall()
 
     if request.method == 'POST':
         return 0
 
-    for first in first_permission_get:
+    for first in permission_get:
         li += '<li class="wiki_li" style="margin-left: 20px;"><a href="/manage/group/' + first[0] + '">' + first[0] + '</a></li>'
 
     return jinja.render("index.html", request, wiki_set = await wiki_set(request, 0),
         data = li,
         title = '권한 그룹',
         sub = 0,
-        menu = [['manage/group/add', '생성'], ['manage', '이전']]
+        menu = [['manage', '이전']]
     )
 
 @app.route("/manage/grant")
@@ -898,17 +924,13 @@ async def wiki_manage_namespace(request):
 
 @app.route("/manage/restart")
 async def wiki_manage_restart(request):
-    async with aiofiles.open('data/setting.json', encoding = 'utf8') as f:
-        setting_data = json.loads(await f.read())
-        db = await aiosqlite.connect(setting_data['db_name'] + '.db')
-
     try:
         os.execl(sys.executable, sys.executable, *sys.argv)
     except:
         try:
             os.execl(sys.executable, '"' + sys.executable + '"', *sys.argv)
         except:
-            return re_error('/error/33')
+            return response.redirect("/error/")
 
 @app.route("/manage/engine")
 async def wiki_manage_engine(request):

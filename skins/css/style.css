@@ -20,7 +20,7 @@ body {
 
 #skin_top {
     height: 40vh;
-    background: linear-gradient(to right, #00afff, #008dcf);
+    background-color: #666666;
     font-size: 46px;
     font-weight: 800;
     color: white;
@@ -50,7 +50,6 @@ body {
 }
 
 a {
-    color: #00AFFF!important;
     text-decoration: none;
 }
 
@@ -222,7 +221,10 @@ table {
     margin-bottom: 5px;
 }
 
-.wiki_thread_table {
-    padding: 7px 12px;
-    
+.wiki_thread_table_first {
+    padding: 20px 25px;   
+    margin-bottom: 20px;
+    background-color: #666666;
+    color: white!important;
+    width: 400px;
 }
