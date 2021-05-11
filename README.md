@@ -17,7 +17,7 @@ Sanic과 aiosqlite를 사용하며, 오픈나무 3.2.0 버전과 호환됩니다
  * [기타](#기타)
 
 ## 시작
-VientoEngine은 Python 3 기반 애플리케이션이며, Python 3.6 이상 버전이 동작하는 환경이 필요합니다.
+VientoEngine은 Python 3 기반 애플리케이션이며, Python 3.7 이상 버전이 동작하는 환경이 필요합니다.
 
 자세한 내용은 [설치 가이드](https://viento.badawiki.site#main2)를 참조하세요.
 
@@ -29,8 +29,6 @@ VientoEngine에는 확장 기능이 존재합니다. 확장 기능 스토어에�
 ## 지원
  * 문법
      * 나무마크(namumark)
-         * py 렌더러 (JS가 싫거나 컴퓨터 성능이 낮을 시 사용, 기본값)
-         * JS 렌더러 (컴퓨터 성능이 좋고, 빠른 렌더러를 원할 때 사용)
      * 더마크(themark)
      * ~~미디어위키(MediaWiki)~~ (예정)
      * ~~모니위키(MoniWiki)~~ (예정)
@@ -42,11 +40,11 @@ VientoEngine에는 확장 기능이 존재합니다. 확장 기능 스토어에�
 ## 라이선스
 VientoEngine은 BSD 3-Clause License 라이선스로 보호받고 있습니다. VientoEngine을 사용할 때는 반드시 라이선스를 준수해야 하며, 위반할 시 법적 조치가 따를 수 있습니다. 포함된 코드는 아래 목록을 참조하시기 바랍니다.
 
- * [openNAMU](https://github.com/2du/openNAMU) - namumark.py
- * [highlightjs](https://highlightjs.org/) - Syntax highlighting
- * [MathJax](https://www.mathjax.org/) - Numerical expression
- * [sanic-jinja2](https://github.com/lixxu/sanic-jinja2) - Jinja2 support for Sanic
- * [sanic-session](https://github.com/xen/sanic_session) - session management extension
+ * [openNAMU](https://github.com/2du/openNAMU)
+ * [highlightjs](https://highlightjs.org)
+ * [MathJax](https://www.mathjax.org/)
+ * [sanic-jinja2](https://github.com/lixxu/sanic-jinja2)
+ * [sanic-session](https://github.com/xen/sanic_session)
 
 ## 오픈나무
 VientoEngine은 [오픈나무](https://github.com/2du/openNAMU)와 호환됩니다. 하지만 일부 수정이 필요합니다.
